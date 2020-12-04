@@ -1,53 +1,54 @@
 <template>
+  <div>
+    <b-alert show>Default Alert</b-alert>
 
-  <el-form ref="form" :model="form" label-width="80px">
+    <b-alert variant="success" show>Success Alert</b-alert>
 
-    <el-form-item label="用户名">
-      <el-input v-model="form.username"></el-input>
-    </el-form-item>
+    <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+      Dismissible Alert!
+    </b-alert>
 
-    <el-form-item label="密码">
-      <el-input v-model="form.password"></el-input>
-    </el-form-item>
+    <b-alert
+      :show="dismissCountDown"
+      dismissible
+      variant="warning"
+      @dismissed="dismissCountDown = 0"
+      @dismiss-count-down="countDownChanged"
+    >
+      <p>This alert will dismiss after {{ dismissCountDown }} seconds...</p>
+      <b-progress
+        variant="warning"
+        :max="dismissSecs"
+        :value="dismissCountDown"
+        height="4px"
+      ></b-progress>
+    </b-alert>
 
-    <el-form-item>
-      <el-checkbox v-model="form.checked">记住密码</el-checkbox>
-    </el-form-item>
-
-    <el-form-item>
-      <el-button type="primary" @click="onSubmit">登录</el-button>
-    </el-form-item>
-</el-form>
+    <b-button @click="showAlert" variant="info" class="m-1">
+      Show alert with count-down timer
+    </b-button>
+    <b-button @click="showDismissibleAlert = true" variant="info" class="m-1">
+      Show dismissible alert ({{ showDismissibleAlert ? "visible" : "hidden" }})
+    </b-button>
+  </div>
 </template>
+
 <script>
 export default {
-  name: 'Login',
-  components: {},
-  data () {
+  data() {
     return {
-      form: {
-        username: '',
-        password: '',
-        checked: true
-      }
+      dismissSecs: 10,
+      dismissCountDown: 0,
+      showDismissibleAlert: false
     }
   },
-  created () {},
   methods: {
-    onSubmit () {
-      console.log('submit!')
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown
+    },
+    showAlert() {
+      this.dismissCountDown = this.dismissSecs
     }
   }
 }
 </script>
-<style lang="less" scoped>
-.el-form {
-  width: 400px;
-  margin: 300px auto;
-  padding: 50px;
-  background-color: antiquewhite;
-}
-.el-form-item__content {
-  margin: 0 auto;
-}
-</style>
