@@ -5,7 +5,6 @@
         >南京诺因生物—临床检测分析报告系统</b-navbar-brand
       >
       <b-navbar-nav class="mr-auto"> </b-navbar-nav>
-
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
         <b-nav-item href="#">FAQ | 帮助</b-nav-item>
@@ -16,7 +15,6 @@
         <b-nav-item-dropdown text="Lijinhang" right>
           <b-dropdown-item href="#">个人中心</b-dropdown-item>
           <b-dropdown-item href="#">退出登录</b-dropdown-item>
-
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-navbar>

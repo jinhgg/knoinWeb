@@ -4,7 +4,7 @@
       <template #header>传感染mNGS临床检测分析</template>
 
       <template #lead>
-        This is a simple hero unit, a simple jumbotron-style component for
+        （项目介绍）This is a simple hero unit, a simple jumbotron-style component for
         calling extra attention to featured content or information.
       </template>
 
@@ -23,7 +23,7 @@
       <template #header>肺癌小panel临床检测分析</template>
 
       <template #lead>
-        This is a simple hero unit, a simple jumbotron-style component for
+        （项目介绍）This is a simple hero unit, a simple jumbotron-style component for
         calling extra attention to featured content or information.
       </template>
 
