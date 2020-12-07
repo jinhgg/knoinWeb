@@ -36,8 +36,8 @@
       <!-- <b-card class="mt-3" header="Form Data Result">
         <pre class="m-0">{{ loginForm }}</pre>
       </b-card> -->
-        <b-link href="#foo">注册</b-link> |
-        <b-link href="#foo">忘记密码</b-link>
+      <b-link href="#foo">注册</b-link> |
+      <b-link href="#foo">忘记密码</b-link>
     </b-card>
   </div>
 </template>
@@ -46,6 +46,7 @@
 import { login } from '@/api/user'
 
 export default {
+  name: 'Login',
   data() {
     return {
       loginForm: {
