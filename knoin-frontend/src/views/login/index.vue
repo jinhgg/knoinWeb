@@ -51,7 +51,7 @@ export default {
       loginForm: {
         username: '',
         password: '',
-        checked: ['true']
+        checked: [true]
       },
       validation: null,
       show: true
@@ -72,7 +72,7 @@ export default {
       evt.preventDefault()
       this.loginForm.username = ''
       this.loginForm.password = ''
-      this.loginForm.checked = true
+      this.loginForm.checked = [true]
       this.validation = null
       this.show = false
       this.$nextTick(() => {
