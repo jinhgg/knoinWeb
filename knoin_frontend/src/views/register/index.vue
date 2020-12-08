@@ -10,7 +10,7 @@
             :state="validation.username.isValid"
             required
           ></b-form-input>
-          <b-form-invalid-feedback :state="validation.username.isValid">
+          <b-form-invalid-feedback>
             {{validation.username.info}}
           </b-form-invalid-feedback>
         </b-form-group>
@@ -22,7 +22,7 @@
             :state="validation.password.isValid"
             required
           ></b-form-input>
-          <b-form-invalid-feedback :state="validation.password.isValid">
+          <b-form-invalid-feedback>
             {{validation.password.info}}
           </b-form-invalid-feedback>
         </b-form-group>
@@ -34,7 +34,7 @@
             :state="validation.repassword.isValid"
             required
           ></b-form-input>
-          <b-form-invalid-feedback :state="validation.repassword.isValid">
+          <b-form-invalid-feedback>
             {{validation.repassword.info}}
           </b-form-invalid-feedback>
         </b-form-group>
@@ -46,7 +46,7 @@
             :state="validation.mobile.isValid"
             required
           ></b-form-input>
-          <b-form-invalid-feedback :state="validation.mobile.isValid">
+          <b-form-invalid-feedback>
             {{validation.mobile.info}}
           </b-form-invalid-feedback>
         </b-form-group>
@@ -55,9 +55,9 @@
           <b-button type="reset" variant="danger">重置</b-button>
         </div>
       </b-form>
-      <b-card class="mt-3" header="Form Data Result">
+      <!-- <b-card class="mt-3" header="Form Data Result">
         <pre class="m-0">{{ registerForm }}</pre>
-      </b-card>
+      </b-card> -->
     </b-card>
   </div>
 </template>
@@ -98,7 +98,6 @@ export default {
       register(this.registerForm).then(res => {
         console.log('注冊成功！')
       }).catch(err => {
-        this.usernameValidation = false
         console.log('xxx', err)
       })
     },
@@ -108,7 +107,6 @@ export default {
       this.registerForm.password = ''
       this.registerForm.repassword = ''
       this.registerForm.moblie = ''
-      this.validation = null
       this.show = false
       this.$nextTick(() => {
         this.show = true
