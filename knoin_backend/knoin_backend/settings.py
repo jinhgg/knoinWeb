@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,12 +78,12 @@ WSGI_APPLICATION = 'knoin_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',   # 数据库引擎
-        'NAME': 'knoin',         # 你要存储数据的库名，事先要创建之
-        'USER': 'ljh',         # 数据库用户名
-        'PASSWORD': '123',     # 密码
-        'HOST': '47.92.147.61',    # 主机
-        'PORT': '3306',         # 数据库使用的端口
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'knoin',
+        'USER': 'ljh',
+        'PASSWORD': '123',
+        'HOST': '47.92.147.61',
+        'PORT': '3306',
     }
 }
 
@@ -123,3 +125,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# 跨域设置
+CORS_ORIGIN_ALLOW_ALL = True # 允许所有来源，不用再设置白名单
+CORS_ALLOW_CREDENTIALS = True # 允许带cookie
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
+import datetime
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+}

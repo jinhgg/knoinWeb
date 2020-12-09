@@ -22,6 +22,12 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'Layout'
+}
+</script>
+
 <style lang="less">
 .bg-info {
   border-radius: 5px;

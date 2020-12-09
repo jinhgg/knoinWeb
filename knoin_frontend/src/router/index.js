@@ -11,12 +11,12 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/login',
-    name: 'login',
+    name: 'Login',
     component: Login
   },
   {
     path: '/register',
-    name: 'register',
+    name: 'Register',
     component: Register
   },
   {
@@ -25,7 +25,7 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'home',
+        name: 'Home',
         component: Home
       }
     ]

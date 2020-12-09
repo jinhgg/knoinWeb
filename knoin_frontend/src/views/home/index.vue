@@ -43,15 +43,7 @@
 
 <script>
 export default {
-  name: 'Home',
-  data() {
-    return {
-
-    }
-  },
-  methods: {
-
-  }
+  name: 'Home'
 }
 </script>
 
