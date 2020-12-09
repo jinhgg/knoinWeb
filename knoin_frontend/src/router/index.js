@@ -3,8 +3,8 @@ import VueRouter from 'vue-router'
 
 import Login from '@/views/login'
 import Register from '@/views/register'
-import Home from '@/views/home'
 import Layout from '@/views/layout'
+import Project from '@/views/layout/project'
 
 Vue.use(VueRouter)
 
@@ -25,11 +25,12 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'Home',
-        component: Home
+        name: 'Project',
+        component: Project
       }
     ]
   }
+
 ]
 
 const router = new VueRouter({
