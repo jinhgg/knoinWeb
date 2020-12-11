@@ -9,16 +9,13 @@
 import NavBar from '@/components/NavBar.vue'
 
 export default {
-  components: { NavBar },
-  name: 'Layout'
+  name: 'Layout',
+  components: { NavBar }
 }
 </script>
 
 <style lang="less">
 .bg-info {
   border-radius: 5px;
-  .navbar-brand {
-    margin: 0 0 0 10px !important;
-  }
 }
 </style>

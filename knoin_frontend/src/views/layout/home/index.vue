@@ -15,8 +15,10 @@
         It uses utility classes for typography and spacing to space content out
         within the larger container.
       </p>
-
-      <b-button variant="success" href="#">进入使用</b-button>
+      <router-link to="project-01">
+        <b-button variant="success">进入使用</b-button>
+      </router-link>
+      <!-- <b-button variant="success" href="#">进入使用</b-button> -->
       <b-button variant="primary" href="#">使用反馈</b-button>
     </b-jumbotron>
     <b-jumbotron>
@@ -35,7 +37,9 @@
         within the larger container.
       </p>
 
-      <b-button variant="success" href="#">进入使用</b-button>
+      <router-link to="project-two">
+        <b-button variant="success">进入使用</b-button>
+      </router-link>
       <b-button variant="primary" href="#">使用反馈</b-button>
     </b-jumbotron>
   </div>

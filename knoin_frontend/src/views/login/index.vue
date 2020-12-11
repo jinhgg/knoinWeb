@@ -29,28 +29,32 @@
           </b-form-checkbox-group>
         </b-form-group>
         <div class="button-group">
-          <b-button type="submit" variant="primary">登录</b-button>
+          <router-link to="/">
+            <b-button variant="primary">登录</b-button>
+            <!-- <b-button type="submit" variant="primary">登录</b-button> -->
+
+          </router-link>
           <b-button type="reset" variant="danger">重置</b-button>
         </div>
       </b-form>
       <!-- <b-card class="mt-3" header="Form Data Result">
         <pre class="m-0">{{ loginForm }}</pre>
       </b-card> -->
-      <b-link href="#foo">注册</b-link> |
+      <b-link href="/#/register">注册</b-link> |
       <b-link href="#foo">忘记密码</b-link>
     </b-card>
   </div>
 </template>
 
 <script>
-import { login } from '@/api/user'
+// import { login } from '@/api/user'
 export default {
   name: 'Login',
   data() {
     return {
       loginForm: {
-        username: '',
-        password: '',
+        username: 'admin',
+        password: 'admin',
         checked: [true]
       },
       validation: null,
@@ -59,14 +63,14 @@ export default {
   },
   methods: {
     onSubmit(evt) {
-      evt.preventDefault()
+      // evt.preventDefault()
       // alert(JSON.stringify(this.loginForm))
-      login(this.loginForm).then(res => {
-        console.log('登录成功！')
-      }).catch(err => {
-        this.validation = false
-        console.log('xxx', err)
-      })
+      // login(this.loginForm).then(res => {
+      //   console.log('登录成功！')
+      // }).catch(err => {
+      //   this.validation = false
+      //   console.log('xxx', err)
+      // })
     },
     onReset(evt) {
       evt.preventDefault()
