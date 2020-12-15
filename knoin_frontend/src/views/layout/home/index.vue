@@ -15,7 +15,7 @@
         It uses utility classes for typography and spacing to space content out
         within the larger container.
       </p>
-      <router-link to="project-01">
+      <router-link :to="{ name: 'Desc01' }">
         <b-button variant="success">进入使用</b-button>
       </router-link>
       <!-- <b-button variant="success" href="#">进入使用</b-button> -->

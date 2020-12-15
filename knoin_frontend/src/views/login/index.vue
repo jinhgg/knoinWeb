@@ -94,8 +94,5 @@ export default {
 }
 .button-group {
   text-align: center;
-  .btn-primary {
-    margin: 0 10px;
-  }
 }
 </style>

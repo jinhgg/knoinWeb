@@ -9,6 +9,8 @@ import Project01 from '@/views/layout/project-01'
 import Desc01 from '@/views/layout/project-01/desc.vue'
 import Result01 from '@/views/layout/project-01/result.vue'
 import Project02 from '@/views/layout/project-02'
+import Help from '@/views/layout/help'
+import Upload from '@/views/layout/upload'
 
 Vue.use(VueRouter)
 
@@ -29,8 +31,18 @@ const routes = [
     children: [
       { // 主页
         path: '',
-        name: 'home',
+        name: 'Home',
         component: Home
+      },
+      { // 帮助
+        path: '/help',
+        name: 'Help',
+        component: Help
+      },
+      { // 文件上传
+        path: '/upload',
+        name: 'Upload',
+        component: Upload
       },
       { // 01项目页
         path: '/project-01',

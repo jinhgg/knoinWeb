@@ -9,6 +9,7 @@
       ></b-icon>
       首页
     </b-breadcrumb-item>
+
     <b-breadcrumb-item
       v-for="bc in breadCrumb"
       :key="bc.href"
@@ -33,17 +34,9 @@ export default {
 </script>
 
 <style lang="less">
-.bg-info {
-  border-radius: 5px;
-  .logo {
-    width: 55px;
-    vertical-align: bottom;
-  }
-  .avatar {
-    width: 30px;
-    height: 30px;
-    margin: auto;
-    margin-left: 8px;
-  }
+.breadcrumb {
+  background-color: #fff !important;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 </style>
