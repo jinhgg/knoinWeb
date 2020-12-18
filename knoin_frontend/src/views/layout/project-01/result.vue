@@ -4,7 +4,7 @@
     <b-card no-body>
       <b-tabs card>
         <b-tab title="分析结果" active>
-          <h3>结果展现页面</h3>
+          <b-table stacked :items="items_01"></b-table>
         </b-tab>
         <b-tab title="生成报告">
           <b-card-body>

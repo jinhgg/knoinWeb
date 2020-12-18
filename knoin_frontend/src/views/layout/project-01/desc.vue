@@ -5,46 +5,81 @@
       <b-tabs card>
         <b-tab title="新建项目" active>
           <b-card-body>
-            <b-card title="基本信息" class="basicInfo">
-              <b-input-group prepend="姓名">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="年龄">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="性别">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="编号">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="样本类型">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="表型">
-                <b-form-input></b-form-input>
-              </b-input-group>
+            <b-card
+              class="basicInfo"
+              header="基本信息"
+              header-tag="header"
+              header-bg-variant=""
+            >
+              <b-form-group label-cols-sm="3" label="姓名:" label-for="name">
+                <b-form-input id="name" size="sm"></b-form-input>
+              </b-form-group>
+
+              <b-form-group label-cols-sm="3" label="年龄:" label-for="age">
+                <b-form-input id="age" size="sm"></b-form-input>
+              </b-form-group>
+              <b-form-group label-cols-sm="3" label="性别:" label-for="gender">
+                <b-form-input id="gender" size="sm"></b-form-input>
+              </b-form-group>
+              <b-form-group label-cols-sm="3" label="编号:" label-for="no">
+                <b-form-input id="no" size="sm"></b-form-input>
+              </b-form-group>
+
+              <b-form-group
+                label-cols-sm="4"
+                label="样本类型:"
+                label-for="type"
+              >
+                <b-form-input list="type-list-id" size="sm"></b-form-input>
+                <datalist id="type-list-id">
+                  <option>Manual Option</option>
+                  <option>Manual Option</option>
+                  <option>Manual Option</option>
+                </datalist>
+              </b-form-group>
+
+              <b-form-group label-cols-sm="4" label="表型:" label-for="type">
+                <b-form-input list="form-list-id" size="sm"></b-form-input>
+                <datalist id="form-list-id">
+                  <option>Manual Option</option>
+                  <option>Manual Option</option>
+                  <option>Manual Option</option>
+                </datalist>
+              </b-form-group>
             </b-card>
+
             <b-card class="btnGroup">
-              <b-button variant="primary">数据选取</b-button>
-              <b-button variant="primary">参考选取</b-button>
-              <b-button variant="primary">保存</b-button>
+              <b-button variant="outline-primary">数据选取</b-button>
+              <b-button variant="outline-primary">参考选取</b-button>
+              <b-button variant="outline-primary">保存</b-button>
               <b-button variant="danger">分析</b-button>
             </b-card>
 
-            <b-card class="analysisConfig" title="分析设置">
-              <b-input-group prepend="MQ">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="BQ">
-                <b-form-input></b-form-input>
-              </b-input-group>
-              <b-input-group prepend="AD">
-                <b-form-input></b-form-input>
-              </b-input-group>
+            <b-card class="analysisConfig" title="">
+              <b-table hover :items="inputs" :fields="inputs_fields">
+                <template v-slot:cell(数值)="">
+                  <b-form-input size="sm"></b-form-input>
+                </template>
+                <template v-slot:cell(操作)="row">
+                  <b-button
+                    @click="delConfig(row)"
+                    size="sm"
+                    variant="outline-danger"
+                    >删除</b-button
+                  >
+                </template>
+              </b-table>
+              <b-button
+                size="sm"
+                style="float: right; margin-right: 10px"
+                variant="outline-success"
+                @click="addConfig"
+                >增加</b-button
+              >
             </b-card>
           </b-card-body>
         </b-tab>
+
         <b-tab title="进行中">
           <b-card-body>
             <b-table striped hover :items="items"></b-table>
@@ -85,6 +120,12 @@ export default {
       breadCrumb: [
         { href: '', name: '传感染mNGS临床检测分析', isActive: true }
       ],
+      inputs_fields: ['参数名', '数值', '操作'],
+      inputs: [
+        { 参数名: 'MQ' },
+        { 参数名: 'BQ' },
+        { 参数名: 'AD' }
+      ],
       items: [
         { 项目ID: 40, 项目名称: 'Dickerson', 开始时间: '2020-10-1', 文件: '计算文件', 分析参数: '参数详情', 项目情况: '分析中：50%' },
         { 项目ID: 21, 项目名称: 'Larsen', 开始时间: '2020-10-1', 文件: '计算文件', 分析参数: '参数详情', 项目情况: '分析中：50%' },
@@ -100,7 +141,14 @@ export default {
       ]
     }
   },
-  methods: {}
+  methods: {
+    delConfig(row) {
+      this.inputs.splice(row.index, 1)
+    },
+    addConfig(row) {
+      this.inputs.push({ 参数名: 'AD' })
+    }
+  }
 }
 </script>
 
@@ -112,10 +160,10 @@ export default {
   margin: 5px auto;
 }
 .card {
-  border: 2px solid rgba(0, 0, 0, 0.125);
+  // border: 2px solid rgba(0, 0, 0, 0.125);
   .card-body {
     .basicInfo {
-      max-width: 30%;
+      max-width: 50%;
       float: left;
       margin-left: 50px;
       margin-bottom: 40px;
