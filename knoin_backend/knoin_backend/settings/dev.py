@@ -110,12 +110,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# 以下为自定义配置
+# ######################################################################### #
+# ############################## 以下是自定义配置 ########################### #
+# ######################################################################### #
+
+
 AUTH_USER_MODEL = "users.User"
+# 日志
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
-    'formatters': {
+    'formatters': {  # 日志信息显示的格式
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
         },
@@ -123,44 +128,40 @@ LOGGING = {
             'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
         },
     },
-    'filters': {  # 对日志过滤
+    'filters': {  # 对日志进行过滤
         'require_debug_true': {  # django在debug模式下才输出日志
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
     'handlers': {  # 日志处理方法
-        'console': {
+        'console': {  # 向终端中输出日志
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'file': {
+        'file': {  # 向文件中输出日志
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(BASE_DIR), "logs/knoin.log"),
+            'filename': os.path.join(os.path.dirname(BASE_DIR), "logs/knoin.log"),  # 日志文件的位置
             'maxBytes': 300 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose'
         },
     },
     'loggers': {  # 日志器
-        'django': {  # 定义一个名为django的日志器
+        'django': {  # 定义了一个名为django的日志器
             'handlers': ['console'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
-            'level': 'INFO',  # 日志器接受最低日志级别
+            'level': 'INFO',  # 日志器接收的最低日志级别
         },
     }
 }
-
-# # 跨域设置
-# CORS_ORIGIN_ALLOW_ALL = True # 允许所有来源，不用再设置白名单
-# CORS_ALLOW_CREDENTIALS = True # 允许带cookie
+# 跨域设置
+CORS_ORIGIN_ALLOW_ALL = True  # 允许所有来源，不用再设置白名单
+CORS_ALLOW_CREDENTIALS = True  # 允许带cookie
 
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'knoin_backend.utils.exceptions.exception_handler',
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
 }

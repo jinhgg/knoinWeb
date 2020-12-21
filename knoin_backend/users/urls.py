@@ -1,6 +1,9 @@
 from django.urls import path
-from users.views import UserView
+from users.views import UserView,ceshi
+from django.conf.urls import url
 
 urlpatterns = [
-    path('', UserView.as_view(), name='index'),
+    # path('users/', ceshi),
+    path('users/', UserView.as_view()),
+
 ]
