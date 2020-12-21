@@ -164,4 +164,5 @@ CORS_ALLOW_CREDENTIALS = True  # 允许带cookie
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'knoin_backend.utils.exceptions.exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
