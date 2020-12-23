@@ -11,7 +11,7 @@
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{validation.username.info}}
+            {{ validation.username.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-2" label="密码:" label-for="input-2">
@@ -23,31 +23,31 @@
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{validation.password.info}}
+            {{ validation.password.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-3" label="重复密码:" label-for="input-3">
           <b-form-input
             id="input-3"
-            v-model="registerForm.repassword"
+            v-model="registerForm.password2"
             type="password"
-            :state="validation.repassword.isValid"
+            :state="validation.password2.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{validation.repassword.info}}
+            {{ validation.password2.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-4" label="手机号:" label-for="input-4">
           <b-form-input
             id="input-4"
-            v-model="registerForm.moblie"
+            v-model="registerForm.mobile"
             type="tel"
             :state="validation.mobile.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{validation.mobile.info}}
+            {{ validation.mobile.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <div class="button-group">
@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { register, checkRegister } from '@/api/user'
+import { register } from '@/api/user'
 
 export default {
   name: 'Register',
@@ -72,41 +72,64 @@ export default {
       registerForm: {
         username: '',
         password: '',
-        repassword: '',
-        moblie: ''
+        password2: '',
+        mobile: ''
       },
       validation: {
         username: { isValid: null, info: '' },
         password: { isValid: null, info: '' },
-        repassword: { isValid: null, info: '' },
+        password2: { isValid: null, info: '' },
         mobile: { isValid: null, info: '' }
       },
       show: true
     }
   },
   methods: {
-    checkForm() {
-      this.validation = checkRegister(this.registerForm)
-      return false
+    resetValidation() {
+      this.validation = {
+        username: { isValid: null, info: '' },
+        password: { isValid: null, info: '' },
+        password2: { isValid: null, info: '' },
+        mobile: { isValid: null, info: '' }
+      }
     },
+
     onSubmit(evt) {
       evt.preventDefault()
-      if (this.checkForm() === false) {
-        return
-      }
+      this.resetValidation()
       // alert(JSON.stringify(this.loginForm))
       register(this.registerForm).then(res => {
         console.log('注冊成功！')
       }).catch(err => {
-        console.log('xxx', err)
+        const errMsg = err.response.data
+        console.log(errMsg)
+        if (errMsg.mobile) {
+          this.validation.mobile = {
+            isValid: false, info: errMsg.mobile[0]
+          }
+        } else if (errMsg.non_field_errors) {
+          this.validation.password2 = {
+            isValid: false, info: errMsg.non_field_errors
+          }
+        } else if (errMsg.includes('Duplicate entry') && errMsg.includes('users_user.username')) {
+          this.validation.username = {
+            isValid: false, info: '用户名已注册'
+          }
+        } else if (errMsg.includes('Duplicate entry') && errMsg.includes('users_user_mobile')) {
+          this.validation.mobile = {
+            isValid: false, info: '手机号已注册'
+          }
+        } else {
+          alert(errMsg)
+        }
       })
     },
     onReset(evt) {
       evt.preventDefault()
       this.registerForm.username = ''
       this.registerForm.password = ''
-      this.registerForm.repassword = ''
-      this.registerForm.moblie = ''
+      this.registerForm.password2 = ''
+      this.registerForm.mobile = ''
       this.show = false
       this.$nextTick(() => {
         this.show = true

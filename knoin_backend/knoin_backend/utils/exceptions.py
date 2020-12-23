@@ -17,10 +17,9 @@ def exception_handler(exc, context):
     response = drf_exception_handler(exc, context)
 
     if response is None:
-        view = context['view']
+        # 数据库异常
         if isinstance(exc, DatabaseError):
-            # 数据库异常
-            logger.error('[%s] %s' % (view, exc))
-            response = Response({'message': exc.args}, status=status.HTTP_507_INSUFFICIENT_STORAGE)
+            logger.error('[{}] {}'.format(context['view'], exc))
+            response = Response(exc.args[-1], status=status.HTTP_507_INSUFFICIENT_STORAGE)
 
     return response

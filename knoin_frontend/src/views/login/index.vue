@@ -29,11 +29,11 @@
           </b-form-checkbox-group>
         </b-form-group>
         <div class="button-group">
-          <router-link to="/">
-            <b-button variant="primary">登录</b-button>
-            <!-- <b-button type="submit" variant="primary">登录</b-button> -->
+          <!-- <router-link to="/"> -->
+            <!-- <b-button variant="primary">登录</b-button> -->
+            <b-button type="submit" variant="primary">登录</b-button>
 
-          </router-link>
+          <!-- </router-link> -->
           <b-button type="reset" variant="danger">重置</b-button>
         </div>
       </b-form>
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-// import { login } from '@/api/user'
+import { login } from '@/api/user'
 export default {
   name: 'Login',
   data() {
@@ -63,14 +63,14 @@ export default {
   },
   methods: {
     onSubmit(evt) {
-      // evt.preventDefault()
+      evt.preventDefault()
       // alert(JSON.stringify(this.loginForm))
-      // login(this.loginForm).then(res => {
-      //   console.log('登录成功！')
-      // }).catch(err => {
-      //   this.validation = false
-      //   console.log('xxx', err)
-      // })
+      login(this.loginForm).then(res => {
+        console.log('登录成功！')
+      }).catch(err => {
+        this.validation = false
+        console.log('xxx', err)
+      })
     },
     onReset(evt) {
       evt.preventDefault()

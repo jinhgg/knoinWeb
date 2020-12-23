@@ -1,5 +1,9 @@
 import re
 from rest_framework import serializers
+# from rest_framework.response import Response
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
+
 from users.models import User
 
 
@@ -17,7 +21,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     def validate_mobile(self, value):
         """手机号校验"""
         if not re.match(r'1[3-9]\d{9}$', value):
-            raise serializers.ValidationError('手机号格式有误')
+            raise serializers.ValidationError('手机号格式不正确')
         return value
 
     def validate(self, attrs):
@@ -28,9 +32,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         del validated_data['password2']
         password = validated_data.pop('password')
-
         user = User(**validated_data)
         user.set_password(password)
         user.save()
         return user
-

@@ -4,6 +4,6 @@ from django.conf.urls import url
 
 urlpatterns = [
     # path('users/', ceshi),
-    path('users/', RegisterView.as_view()),
+    path('register/', RegisterView.as_view()),
 
 ]
