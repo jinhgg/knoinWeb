@@ -1,38 +1,11 @@
-import re
 from rest_framework import serializers
-# from rest_framework.response import Response
-from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from users.models import User
 
 
-class CreateUserSerializer(serializers.ModelSerializer):
-    """注册序列化器"""
-    username = serializers.CharField(help_text='用户名')
-    mobile = serializers.CharField(help_text='手机号')
-    password = serializers.CharField(help_text='密码', write_only=True)  # write_only为true表示只校验(反序列化)不返回(序列化)
-    password2 = serializers.CharField(help_text='重复密码', write_only=True)
+class UserSerializer(serializers.ModelSerializer):
+    """用户序列化器"""
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'password2', 'mobile']
-
-    def validate_mobile(self, value):
-        """手机号校验"""
-        if not re.match(r'1[3-9]\d{9}$', value):
-            raise serializers.ValidationError('手机号格式不正确')
-        return value
-
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError('两次密码输入不一致')
-        return attrs
-
-    def create(self, validated_data):
-        del validated_data['password2']
-        password = validated_data.pop('password')
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        fields = ['id', 'username', 'mobile']
