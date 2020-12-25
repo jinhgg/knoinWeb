@@ -1,3 +1,4 @@
+import datetime
 import os
 from pathlib import Path
 
@@ -116,6 +117,8 @@ STATIC_URL = '/static/'
 
 
 AUTH_USER_MODEL = "users.User"
+AUTHENTICATION_BACKENDS = ['knoin_backend.utils.auth.UsernameMobileAuthBackend']
+
 # 日志
 LOGGING = {
     'version': 1,
@@ -157,12 +160,28 @@ LOGGING = {
         },
     }
 }
+
 # 跨域设置
 CORS_ORIGIN_ALLOW_ALL = True  # 允许所有来源，不用再设置白名单
 CORS_ALLOW_CREDENTIALS = True  # 允许带cookie
 
+# jwt认证
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=3),
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'knoin_backend.utils.auth.jwt_response_payload_handler',
+}
+
+# drf
 REST_FRAMEWORK = {
+
     # 异常处理
     'EXCEPTION_HANDLER': 'knoin_backend.utils.exceptions.exception_handler',
+    # 文档生成
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # jwt认证
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+    ),
 }

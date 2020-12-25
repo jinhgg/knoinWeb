@@ -20,7 +20,6 @@ def exception_handler(exc, context):
         # 数据库异常
         if isinstance(exc, DatabaseError):
             logger.error('[{}] {}'.format(context['view'], exc))
-            # response = Response(exc.args[-1], status=status.HTTP_507_INSUFFICIENT_STORAGE)
-            response = Response('lalala', status=status.HTTP_507_INSUFFICIENT_STORAGE)
+            response = Response(exc.args[-1], status=status.HTTP_507_INSUFFICIENT_STORAGE)
 
     return response

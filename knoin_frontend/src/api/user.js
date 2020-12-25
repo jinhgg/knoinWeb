@@ -12,7 +12,7 @@ export const login = data => {
 export const register = data => {
   return request({
     method: 'POST',
-    url: '/register/',
+    url: '/users/',
     data
   })
 }

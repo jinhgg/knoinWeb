@@ -7,11 +7,11 @@
             id="input-1"
             v-model="registerForm.username"
             type="text"
-            :state="validation.username.isValid"
+            :state="validForm.username.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{ validation.username.info }}
+            {{ validForm.username.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-2" label="密码:" label-for="input-2">
@@ -19,11 +19,11 @@
             id="input-2"
             v-model="registerForm.password"
             type="password"
-            :state="validation.password.isValid"
+            :state="validForm.password.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{ validation.password.info }}
+            {{ validForm.password.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-3" label="重复密码:" label-for="input-3">
@@ -31,11 +31,11 @@
             id="input-3"
             v-model="registerForm.password2"
             type="password"
-            :state="validation.password2.isValid"
+            :state="validForm.password2.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{ validation.password2.info }}
+            {{ validForm.password2.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group id="input-group-4" label="手机号:" label-for="input-4">
@@ -43,11 +43,11 @@
             id="input-4"
             v-model="registerForm.mobile"
             type="tel"
-            :state="validation.mobile.isValid"
+            :state="validForm.mobile.isValid"
             required
           ></b-form-input>
           <b-form-invalid-feedback>
-            {{ validation.mobile.info }}
+            {{ validForm.mobile.info }}
           </b-form-invalid-feedback>
         </b-form-group>
         <div class="button-group">
@@ -75,7 +75,7 @@ export default {
         password2: '',
         mobile: ''
       },
-      validation: {
+      validForm: {
         username: { isValid: null, info: '' },
         password: { isValid: null, info: '' },
         password2: { isValid: null, info: '' },
@@ -85,8 +85,39 @@ export default {
     }
   },
   methods: {
-    resetValidation() {
-      this.validation = {
+    checkForm() {
+      const registerForm = this.registerForm
+      const vaildForm = this.validForm
+      let vaild = true
+      if (registerForm.username.length < 3 || registerForm.username.length > 50) {
+        vaildForm.username = { isValid: false, info: '用户名应在3~50位之间' }
+        vaild = false
+      }
+      if (registerForm.password.length < 6) {
+        vaildForm.password = { isValid: false, info: '密码长度不能小于6位' }
+        vaild = false
+      }
+      if (registerForm.password !== registerForm.password2) {
+        vaildForm.password2 = { isValid: false, info: '两次密码输入不一致' }
+        vaild = false
+      }
+      if (registerForm.mobile.length !== 11) {
+        vaildForm.mobile = { isValid: false, info: '手机号格式不正确' }
+        vaild = false
+      }
+      return vaild
+    },
+    showErrMsg(msg) {
+      this.resetValidForm()
+      const validForm = this.validForm
+      Object.keys(msg).forEach(function (key) {
+        validForm[key] = {
+          isValid: false, info: msg[key][0]
+        }
+      })
+    },
+    resetValidForm() {
+      this.validForm = {
         username: { isValid: null, info: '' },
         password: { isValid: null, info: '' },
         password2: { isValid: null, info: '' },
@@ -96,36 +127,24 @@ export default {
 
     onSubmit(evt) {
       evt.preventDefault()
-      this.resetValidation()
-      // alert(JSON.stringify(this.loginForm))
+      this.resetValidForm()
+      if (this.checkForm() === false) { return }
       register(this.registerForm).then(res => {
         console.log('注冊成功！')
+        window.localStorage.setItem('user', JSON.stringify(res.data))
+        this.$router.push({
+          name: 'Home'
+        })
       }).catch(err => {
-        const errMsg = err.response.data
-        console.log(errMsg)
-        if (errMsg.mobile) {
-          this.validation.mobile = {
-            isValid: false, info: errMsg.mobile[0]
-          }
-        } else if (errMsg.non_field_errors) {
-          this.validation.password2 = {
-            isValid: false, info: errMsg.non_field_errors
-          }
-        } else if (errMsg.includes('Duplicate entry') && errMsg.includes('users_user.username')) {
-          this.validation.username = {
-            isValid: false, info: '用户名已注册'
-          }
-        } else if (errMsg.includes('Duplicate entry') && errMsg.includes('users_user_mobile')) {
-          this.validation.mobile = {
-            isValid: false, info: '手机号已注册'
-          }
-        } else {
-          alert(errMsg)
+        if (err.response === undefined) {
+          alert('服务器停止运行')
         }
+        this.showErrMsg(err.response.data)
       })
     },
     onReset(evt) {
       evt.preventDefault()
+      this.resetValidForm()
       this.registerForm.username = ''
       this.registerForm.password = ''
       this.registerForm.password2 = ''

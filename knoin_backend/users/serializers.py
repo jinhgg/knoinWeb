@@ -1,28 +1,33 @@
 from rest_framework import serializers
+
 from rest_framework.validators import UniqueValidator
+from rest_framework_jwt.settings import api_settings
 
 from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     """用户序列化器"""
+    token = serializers.CharField(read_only=True)  # 只返回，不校验的字段写这里
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'mobile', 'password']  # 这里决定了接口文档表单项
-        extra_kwargs = {
+        fields = ['id', 'username', 'mobile', 'password', 'token']  # 这里决定了接口文档表单项
+        extra_kwargs = {  # 写在这里，不显示声明，返回的错误信息更详细
             'username': {
-                'max_length': 150,
+                'help_text': '用户名，3~50个字符',
+                'max_length': 50,
                 'min_length': 3,
                 'error_messages': {
                     'blank': '用户名不能为空',
                     'required': '用户名不能为空',
-                    'max_length': '用户名应在3~150位之间',
-                    'min_length': '用户名应在3~150位之间'
+                    'max_length': '用户名应在3~50位之间',
+                    'min_length': '用户名应在3~50位之间'
                 },
                 'validators': [UniqueValidator(queryset=User.objects.all(), message='用户名已被注册')]
             },
             'mobile': {
+                'help_text': '手机号，11个字符',
                 'max_length': 11,
                 'min_length': 11,
                 'error_messages': {
@@ -34,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
                 'validators': [UniqueValidator(queryset=User.objects.all(), message='手机号已被注册')]
             },
             'password': {
+                'help_text': '密码，6~50个字符',
                 'write_only': True,
                 'min_length': 6,
                 'max_length': 50,
@@ -52,6 +58,14 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             user.set_password(password)
             user.save()
+
+        # 注册后返回token
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER  # 引用jwt中的叫jwt_payload_handler函数(生成payload)
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER  # 函数引用 生成jwt
+        payload = jwt_payload_handler(user)  # 根据user生成用户相关的载荷
+        token = jwt_encode_handler(payload)  # 传入载荷生成完整的jwt
+        user.token = token
+
         return user
 
     def update(self, instance, validated_data):
