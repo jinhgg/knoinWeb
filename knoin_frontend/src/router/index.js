@@ -12,6 +12,8 @@ import Project02 from '@/views/layout/project-02'
 import Help from '@/views/layout/help'
 import Upload from '@/views/layout/upload'
 
+import { verify } from '@/api/user.js'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -72,6 +74,20 @@ const routes = [
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'Login' && to.name !== 'Register') {
+    const token = window.localStorage.getItem('token')
+    verify(token).then(res => {
+      next()
+    }).catch(err => {
+      if (err.response.status === 400) {
+        alert('登录过期，请重新登录')
+      }
+      next({ name: 'Login' })
+    })
+  } else { next() }
 })
 
 export default router

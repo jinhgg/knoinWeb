@@ -14,8 +14,8 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
 
     permission_classes_by_action = {
-        'create': [AllowAny],
-        'list': [IsAdminUser],
+        'create': [],
+        'list': [AllowAny],
         'retrieve': [IsAuthenticated, IsHimself],
         'update': [IsAuthenticated, IsHimself],
         'partial_update': [IsAuthenticated, IsHimself],

@@ -39,14 +39,14 @@ class UserSerializer(serializers.ModelSerializer):
                 'validators': [UniqueValidator(queryset=User.objects.all(), message='手机号已被注册')]
             },
             'password': {
-                'help_text': '密码，6~50个字符',
+                'help_text': '密码，3~50个字符',
                 'write_only': True,
-                'min_length': 6,
+                'min_length': 3,
                 'max_length': 50,
                 'error_messages': {
                     'blank': '密码不能为空',
                     'required': '密码不能为空',
-                    'min_length': '密码长度不能小于6位',
+                    'min_length': '密码长度不能小于3位',
                     'max_length': '密码长度不能大于50位'
                 }
             }

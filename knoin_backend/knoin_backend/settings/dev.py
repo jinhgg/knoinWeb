@@ -167,7 +167,9 @@ CORS_ALLOW_CREDENTIALS = True  # 允许带cookie
 
 # jwt认证
 JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=3),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=15),
+    # 'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=30),
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'knoin_backend.utils.auth.jwt_response_payload_handler',
 }
 

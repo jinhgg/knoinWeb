@@ -93,8 +93,8 @@ export default {
         vaildForm.username = { isValid: false, info: '用户名应在3~50位之间' }
         vaild = false
       }
-      if (registerForm.password.length < 6) {
-        vaildForm.password = { isValid: false, info: '密码长度不能小于6位' }
+      if (registerForm.password.length < 3) {
+        vaildForm.password = { isValid: false, info: '密码长度不能小于3位' }
         vaild = false
       }
       if (registerForm.password !== registerForm.password2) {
@@ -124,17 +124,13 @@ export default {
         mobile: { isValid: null, info: '' }
       }
     },
-
     onSubmit(evt) {
       evt.preventDefault()
       this.resetValidForm()
       if (this.checkForm() === false) { return }
       register(this.registerForm).then(res => {
-        console.log('注冊成功！')
-        window.localStorage.setItem('user', JSON.stringify(res.data))
-        this.$router.push({
-          name: 'Home'
-        })
+        window.localStorage.setItem('userId', res.data.id)
+        this.$router.push({ name: 'Home' })
       }).catch(err => {
         if (err.response === undefined) {
           alert('服务器停止运行')
