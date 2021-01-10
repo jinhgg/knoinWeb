@@ -50,3 +50,19 @@ class RunScriptView(APIView):
         for line in textlist:
             osList.append(line)
         return Response({'message':'ok', 'os': osList}, status=status.HTTP_200_OK)
+
+
+class GenShFileView(APIView):
+    """
+    run analysis script.
+    """
+    def post(self, request, format=None):
+        params = request.data
+        render_file(params)
+        osList = []
+        import os
+        cmd = 'ps -ef'
+        textlist = os.popen(cmd).readlines()
+        for line in textlist:
+            osList.append(line)
+        return Response({'message':'ok', 'os': osList}, status=status.HTTP_200_OK)
