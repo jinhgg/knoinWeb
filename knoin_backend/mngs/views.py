@@ -1,9 +1,12 @@
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from mngs.serializers import ProjectSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from mngs.models import Project
 
-from rest_framework import filters
+from rest_framework import filters, status
 from django_filters import rest_framework
 from mngs.filters import ProjectFilter
 
@@ -34,17 +37,11 @@ class ProjectViewSet(ModelViewSet):
             return [permission() for permission in self.permission_classes]
 
 
-# class FilePathList(APIView):
-#     """
-#     List file path.
-#     """
-#     def get(self, request, format=None):
-#
-#         return Response(serializer.data)
+class RunScriptView(APIView):
+    """
+    run analysis script.
+    """
+    def post(self, request, format=None):
+        # p = request.data
 
-    # def post(self, request, format=None):
-    #     serializer = SnippetSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("ok", status=status.HTTP_200_OK)
