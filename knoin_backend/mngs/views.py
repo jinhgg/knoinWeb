@@ -43,5 +43,10 @@ class RunScriptView(APIView):
     """
     def post(self, request, format=None):
         # p = request.data
-
-        return Response("ok", status=status.HTTP_200_OK)
+        osList = []
+        import os
+        cmd = 'ps -ef'
+        textlist = os.popen(cmd).readlines()
+        for line in textlist:
+            osList.append(line)
+        return Response({'message':'ok', 'os': osList}, status=status.HTTP_200_OK)
