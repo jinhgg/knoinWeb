@@ -7,4 +7,5 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='站点页面标题')),
     path('', include('users.urls')),
     path('mngs/', include('mngs.urls')),
+    path('', include('filemanager.urls')),
 ]

@@ -1,10 +1,10 @@
 import datetime
-import os
+import os, sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+# sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -29,7 +29,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'users.apps.UserConfig',
-    'mngs.apps.MngsConfig'
+    'mngs.apps.MngsConfig',
+    'filemanager.apps.FilemanagerConfig'
 ]
 
 MIDDLEWARE = [
@@ -116,7 +117,6 @@ STATIC_URL = '/static/'
 # ######################################################################### #
 # ############################## 以下是自定义配置 ########################### #
 # ######################################################################### #
-
 
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = ['knoin_backend.utils.auth.UsernameMobileAuthBackend']
