@@ -1,6 +1,5 @@
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
-
 from knoin_backend.utils.permission import IsHimself
 from users.models import User
 from users.serializers import UserSerializer
@@ -14,7 +13,7 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
 
     permission_classes_by_action = {
-        'create': [],
+        'create': [AllowAny],
         'list': [AllowAny],
         'retrieve': [IsAuthenticated, IsHimself],
         'update': [IsAuthenticated, IsHimself],
