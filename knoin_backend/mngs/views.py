@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
 from mngs.serializers import ProjectSerializer
 from rest_framework.viewsets import ModelViewSet
@@ -57,12 +58,13 @@ class GenShFileView(APIView):
     """
 
     def post(self, request, format=None):
-        params = request.data
-        render_file(params)
-        osList = []
-        import os
-        cmd = 'ps -ef'
-        textlist = os.popen(cmd).readlines()
-        for line in textlist:
-            osList.append(line)
-        return Response({'message': 'ok', 'os': osList}, status=status.HTTP_200_OK)
+        params = request.data.get('params')
+        if not params or not isinstance(params, dict):
+            return Response({'params error'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1.生成文件内容
+        file_str = render(params)
+        # 2.写入到文件
+        cmd = 'echo {} > ./a.sh'.format(file_str)
+        output = runscript('cmd')
+        return Response({'message': 'ok', 'os': output}, status=status.HTTP_200_OK)
