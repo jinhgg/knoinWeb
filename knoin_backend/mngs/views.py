@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from knoin_backend.utils.runscript import runscript
 from mngs.serializers import ProjectSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -41,21 +42,20 @@ class RunScriptView(APIView):
     """
     run analysis script.
     """
+
     def post(self, request, format=None):
-        # p = request.data
-        osList = []
-        import os
-        cmd = 'ps -ef'
-        textlist = os.popen(cmd).readlines()
-        for line in textlist:
-            osList.append(line)
-        return Response({'message':'ok', 'os': osList}, status=status.HTTP_200_OK)
+        cmd = request.data.get('cmd')
+        if not cmd:
+            return Response({'empty cmd'}, status=status.HTTP_204_NO_CONTENT)
+        output = runscript(cmd)
+        return Response({'message': 'ok', 'output': output}, status=status.HTTP_200_OK)
 
 
 class GenShFileView(APIView):
     """
     run analysis script.
     """
+
     def post(self, request, format=None):
         params = request.data
         render_file(params)
@@ -65,4 +65,4 @@ class GenShFileView(APIView):
         textlist = os.popen(cmd).readlines()
         for line in textlist:
             osList.append(line)
-        return Response({'message':'ok', 'os': osList}, status=status.HTTP_200_OK)
+        return Response({'message': 'ok', 'os': osList}, status=status.HTTP_200_OK)
