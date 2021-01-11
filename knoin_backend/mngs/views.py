@@ -62,9 +62,16 @@ class GenShFileView(APIView):
         if not params or not isinstance(params, dict):
             return Response({'params error'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 1.生成文件内容
+        # 1.根据模板生成文件内容
         file_str = render(params)
-        # 2.写入到文件
-        cmd = 'echo {} > ./a.sh'.format(file_str)
-        output = runscript('cmd')
+        # 2.写入到临时文件
+        with open('temp.sh', 'w') as f:
+            f.write(file_str)
+        # 3.把文件复制到mngs目录
+        cmd = 'cat temp.sh > /home/lijh/mNGS/main.sh'.format(file_str)
+        output = runscript(cmd)
+        # 4.执行main.sh
+        cmd = 'sh /home/lijh/mNGS/main.sh>/home/lijh/mNGS/main.sh.o 2>/home/lijh/mNGS/main.sh.e &'
+        output = runscript(cmd)
         return Response({'message': 'ok', 'os': output}, status=status.HTTP_200_OK)
+
