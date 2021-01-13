@@ -9,4 +9,4 @@ class ProjectFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Project
-        fields = '__all__'
+        exclude = ['analys_report', 'kraken2_qc', 'qc', 'qc_image', 'main_sh', 'sam_ini', 'sys_ini']

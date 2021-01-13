@@ -3,17 +3,16 @@ runposition=pbs
 sections=fastp,kraken2,kracal,rgi
 
 [dir]
-outDir=/home/lijh/mNGS/result
+outDir={{ out_dir }}
 filter=$outDir/filter
 kraken=$outDir/kraken
 card_rgi=$outDir/card_rgi
 
 [sample]
-{% for sample in sample_list %}
-LX2004622={{ sample }}
+{% for analys_file_path in analys_file_path_list %}
+{{ client_no }}={{ analys_file_path }}
 {% endfor %}
-# LX2004622=/mnt/sda/project/rawdata/20201203/S200012080_L01_64.fq.gz
-ctrl={{ ctrl }}
+ctrl={{ sample_file_path }}
 
 [pbs]
 queue=batch

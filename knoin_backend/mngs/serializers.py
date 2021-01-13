@@ -10,3 +10,4 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'  # 这里决定了接口文档表单项
+        # exclude = ['analys_result']
