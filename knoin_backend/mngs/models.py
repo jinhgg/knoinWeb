@@ -45,7 +45,7 @@ class Project(models.Model):
     analys_report = models.FileField(help_text='分析结果报告', upload_to=upload_to_result, blank=True, null=True)
     qc = models.FileField(help_text='质控结果1', upload_to=upload_to_result, blank=True, null=True)
     kraken2_qc = models.FileField(help_text='质控结果2', upload_to=upload_to_result, blank=True, null=True)
-    qc_image = models.FileField(help_text='质控图片', upload_to=upload_to_result, blank=True, null=True)
+    qc_image = models.ImageField(help_text='质控图片', upload_to=upload_to_result, blank=True, null=True)
 
     # main.sh
     main_sh = models.FileField(help_text='运行脚本', upload_to=upload_to_config, blank=True, null=True)

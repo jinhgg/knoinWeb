@@ -1,9 +1,13 @@
 import os
-from django.core.files.base import ContentFile
+from base64 import b64encode
+from io import BytesIO
+
+from django.core.files.base import ContentFile, File
+from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from filemanager.models import File
+from filemanager.models import FileManager
 from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
 from mngs.serializers import ProjectSerializer
@@ -105,13 +109,12 @@ class StartAnalysView(APIView):
             return Response({'缺少分析文件'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 分析文件路径
-        analys_file_path = File.objects.get(name=project.analys_file_name).file.path
+        analys_file_path = FileManager.objects.get(name=project.analys_file_name).file.path
         # 样本文件路径
-        sample_file_path = File.objects.get(name=project.sample_file_name).file.path
+        sample_file_path = FileManager.objects.get(name=project.sample_file_name).file.path
 
         sys_ini_str = render({}, 'sys_ini').encode(encoding='UTF-8')
         project.sys_ini.save('sys.ini', ContentFile(sys_ini_str))
-        a = os.path.dirname(project.sys_ini.path)
 
         sam_ini_str = render({
             'analys_file_path_list': [analys_file_path],
@@ -127,6 +130,69 @@ class StartAnalysView(APIView):
         project.main_sh.save('main.sh', ContentFile(main_sh_str))
 
         cmd = 'sh {path}>{path}.o 2>{path}.e &'.format(path=project.main_sh.path)
+        print(cmd)
         output = runscript(cmd)
+        print(output)
+        project.status = '正在分析'
+        project.save()
 
-        return Response({output}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'已经开始分析'}, status=status.HTTP_200_OK)
+
+
+class UpdateStateView(APIView):
+    """
+    获取分析进度
+    """
+
+    def post(self, request):
+        """
+        :param request:
+        :return:
+        """
+        # project_id = request.data.get('project_id')
+        analysing_projects = Project.objects.filter(status='正在分析')
+        if not analysing_projects:
+            return Response({''}, status=status.HTTP_204_NO_CONTENT)
+
+        for project in analysing_projects:
+            # 判断project是否分析完成
+            if os.listdir(os.path.dirname(os.path.dirname(project.sys_ini.path)) + '/kraken') and \
+                    os.listdir(os.path.dirname(os.path.dirname(project.sys_ini.path)) + '/filter'):
+                # 1.保存质控图片 LX2004622.Qual_lines.png
+                qc_image_path = os.path.dirname(os.path.dirname(
+                    project.sys_ini.path)) + '/filter/' + project.client_no + '/{}.Qual_lines.png'.format(
+                    project.client_no)
+                print(11111)
+                qc_image = open(qc_image_path,'rb').read()
+                print(22222)
+                project.qc_image.save('qc_image.png', ContentFile(qc_image))
+
+                # 2.质控结果1
+                qc_path = os.path.dirname(os.path.dirname(
+                    project.sys_ini.path)) + '/kraken/{}.kraken2_qc.xls'.format(
+                    project.client_no)
+                qc = open(qc_path)
+                project.qc.save('qc.xls', File(qc))
+
+                # 3.质控结果2
+                kraken2_qc_path = os.path.dirname(os.path.dirname(
+                    project.sys_ini.path)) + '/filter/' + project.client_no + '/{}.qc.xls'.format(
+                    project.client_no)
+                kraken2_qc = open(kraken2_qc_path)
+                project.qc.save('qc2.xls', File(kraken2_qc))
+
+                # 4.分析结果 LX2004793.kraken2_abundance_result.anno
+                analys_report_path = os.path.dirname(os.path.dirname(
+                    project.sys_ini.path)) + '/kraken/{}.kraken2_abundance_result.anno.xls'.format(
+                    project.client_no)
+                analys_report = open(analys_report_path)
+                project.qc.save('analys_report.xls', File(analys_report))
+
+                project.status = '分析完成'
+                project.save()
+
+        # done_projects = Project.objects.filter(status='分析完成')
+        # analysing_projects = Project.objects.filter(status='正在分析')
+        # done_serializer = ProjectSerializer(done_projects, many=True)
+        # analysing_serializer = ProjectSerializer(analysing_projects, many=True)
+        return Response({''}, status=status.HTTP_204_NO_CONTENT)
