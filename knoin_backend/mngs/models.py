@@ -4,13 +4,21 @@ from django.db import models
 def upload_to_result(instance, filename):
     return '/'.join(['analys_data', instance.knoin_no, 'result', filename])
 
+
 def upload_to_config(instance, filename):
     return '/'.join(['analys_data', instance.knoin_no, 'config', filename])
+
+
+class Collection(models.Model):
+    """项目批次"""
+    name = models.CharField(help_text='项目批次', max_length=150, blank=True, null=True)
+    ctrl_file_name = models.CharField(help_text='参考文件名称', max_length=150, blank=True, null=True)
 
 
 class Project(models.Model):
     """自定义mngs检测项目模型类"""
 
+    collection_id = models.CharField(help_text='批次id', max_length=150, blank=True, null=True)
     status = models.CharField(help_text='状态', max_length=150, blank=True, null=True)  # 新创建 待分析 分析中 已完成
     client_name = models.CharField(help_text='客户/代理/销售名称', max_length=150, blank=True, null=True)
     client_no = models.CharField(help_text='客户编号', max_length=150, blank=True, null=True)

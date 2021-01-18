@@ -1,10 +1,11 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from mngs.views import ProjectViewSet, RunScriptView, GenShFileView, StartAnalysView, UpdateStateView
+from mngs.views import ProjectViewSet, CollectionViewSet, RunScriptView, GenShFileView, StartAnalysView, UpdateStateView
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet)
+router.register(r'collections', CollectionViewSet)
 urlpatterns = router.urls
 
 urlpatterns += [

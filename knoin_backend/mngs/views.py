@@ -1,6 +1,4 @@
 import os
-from base64 import b64encode
-from io import BytesIO
 
 from django.core.files.base import ContentFile, File
 from django.http import JsonResponse
@@ -10,10 +8,10 @@ from rest_framework.views import APIView
 from filemanager.models import FileManager
 from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
-from mngs.serializers import ProjectSerializer
+from mngs.serializers import ProjectSerializer, CollectionSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from mngs.models import Project
+from mngs.models import Project, Collection
 
 from rest_framework import filters, status
 from django_filters import rest_framework
@@ -22,7 +20,7 @@ from mngs.filters import ProjectFilter
 
 class ProjectViewSet(ModelViewSet):
     """
-    A viewset for viewing and editing user instances.
+    A viewset for viewing and editing Project instances.
     """
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
@@ -30,6 +28,28 @@ class ProjectViewSet(ModelViewSet):
     filter_class = ProjectFilter
     search_fields = '__all__'
 
+    permission_classes_by_action = {
+        'create': [],
+        'list': [],
+        'retrieve': [],
+        'update': [],
+        'partial_update': [],
+        'destroy': []
+    }
+
+    def get_permissions(self):
+        try:
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            return [permission() for permission in self.permission_classes]
+
+
+class CollectionViewSet(ModelViewSet):
+    """
+    A viewset for viewing and editing Collection instances.
+    """
+    serializer_class = CollectionSerializer
+    queryset = Collection.objects.all()
     permission_classes_by_action = {
         'create': [],
         'list': [],
@@ -163,7 +183,7 @@ class UpdateStateView(APIView):
                     project.sys_ini.path)) + '/filter/' + project.client_no + '/{}.Qual_lines.png'.format(
                     project.client_no)
                 print(11111)
-                qc_image = open(qc_image_path,'rb').read()
+                qc_image = open(qc_image_path, 'rb').read()
                 print(22222)
                 project.qc_image.save('qc_image.png', ContentFile(qc_image))
 
