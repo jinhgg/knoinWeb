@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
-from mngs.models import Project,Collection
+from mngs.models import Project, Collection
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """分析项目序列化器"""
+
     # token = serializers.CharField(read_only=True)  # 只返回，不校验的字段写这里
 
     class Meta:

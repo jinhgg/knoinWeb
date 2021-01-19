@@ -1,5 +1,5 @@
 import django_filters
-from mngs.models import Project
+from mngs.models import Project, Collection
 
 
 class ProjectFilter(django_filters.rest_framework.FilterSet):
@@ -9,4 +9,14 @@ class ProjectFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Project
-        exclude = ['analys_report', 'kraken2_qc', 'qc', 'qc_image', 'main_sh', 'sam_ini', 'sys_ini']
+        exclude = ['analys_report', 'kraken2_qc', 'qc', 'qc_image']
+
+
+class CollectionFilter(django_filters.rest_framework.FilterSet):
+    """
+    Collection过滤器
+    """
+
+    class Meta:
+        model = Collection
+        exclude = ['main_sh', 'sam_ini', 'sys_ini']
