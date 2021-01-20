@@ -187,7 +187,7 @@ class UpdateStateView(APIView):
         :return:
         """
         collection_id = request.data.get('collection_id')
-        analysing_collection = Collection.objects.filter(id=collection_id)
+        analysing_collection = Collection.objects.get(id=collection_id)
         if not analysing_collection:
             return Response({''}, status=status.HTTP_204_NO_CONTENT)
 
@@ -208,68 +208,28 @@ class UpdateStateView(APIView):
             project.qc_image.save('qc_image.png', ContentFile(qc_image))
 
             # 2.质控结果1
-            qc_path = collection_dir + '/kraken/{}.kraken2_qc.xls'.format(
+            qc_path = collection_dir + '/classify/{}.classify_qc.xls'.format(
                 project.client_no)
             qc = open(qc_path)
             project.qc.save('qc.xls', File(qc))
 
             # 3.质控结果2
-            kraken2_qc_path = os.path.dirname(os.path.dirname(
-                project.sys_ini.path)) + '/classify/' + project.client_no + '/{}.qc.xls'.format(
+            kraken2_qc_path = collection_dir + '/filter/' + project.client_no + '/{}.qc.xls'.format(
                 project.client_no)
             kraken2_qc = open(kraken2_qc_path)
-            project.qc.save('qc2.xls', File(kraken2_qc))
+            project.kraken2_qc.save('qc2.xls', File(kraken2_qc))
 
             # 4.分析结果 LX2004793.kraken2_abundance_result.anno
-            analys_report_path = os.path.dirname(os.path.dirname(
-                project.sys_ini.path)) + '/kraken/{}.kraken2_abundance_result.anno.xls'.format(
+            analys_report_path = collection_dir + '/classify/{}.classify_abundance_result.anno.xls'.format(
                 project.client_no)
             analys_report = open(analys_report_path)
-            project.qc.save('analys_report.xls', File(analys_report))
+            project.analys_report.save('analys_report.xls', File(analys_report))
 
             project.status = '分析完成'
             project.save()
 
-        for collection in analysing_collections:
-            # 判断project是否分析完成
-            if not os.listdir(os.path.dirname(os.path.dirname(collection.sys_ini.path)) + '/classify'):
-                # 1.保存质控图片 LX2004622.Qual_lines.png
-                qc_image_path = os.path.dirname(os.path.dirname(
-                    project.sys_ini.path)) + '/filter/' + project.client_no + '/{}.Qual_lines.png'.format(
-                    project.client_no)
-                print(11111)
-                qc_image = open(qc_image_path, 'rb').read()
-                print(22222)
-                project.qc_image.save('qc_image.png', ContentFile(qc_image))
-
-                # 2.质控结果1
-                qc_path = os.path.dirname(os.path.dirname(
-                    project.sys_ini.path)) + '/kraken/{}.kraken2_qc.xls'.format(
-                    project.client_no)
-                qc = open(qc_path)
-                project.qc.save('qc.xls', File(qc))
-
-                # 3.质控结果2
-                kraken2_qc_path = os.path.dirname(os.path.dirname(
-                    project.sys_ini.path)) + '/filter/' + project.client_no + '/{}.qc.xls'.format(
-                    project.client_no)
-                kraken2_qc = open(kraken2_qc_path)
-                project.qc.save('qc2.xls', File(kraken2_qc))
-
-                # 4.分析结果 LX2004793.kraken2_abundance_result.anno
-                analys_report_path = os.path.dirname(os.path.dirname(
-                    project.sys_ini.path)) + '/kraken/{}.kraken2_abundance_result.anno.xls'.format(
-                    project.client_no)
-                analys_report = open(analys_report_path)
-                project.qc.save('analys_report.xls', File(analys_report))
-
-                project.status = '分析完成'
-                project.save()
-
-        # done_projects = Project.objects.filter(status='分析完成')
-        # analysing_projects = Project.objects.filter(status='正在分析')
-        # done_serializer = ProjectSerializer(done_projects, many=True)
-        # analysing_serializer = ProjectSerializer(analysing_projects, many=True)
+        analysing_collection.status = '分析完成'
+        analysing_collection.save()
         return Response({''}, status=status.HTTP_204_NO_CONTENT)
 
         # with open(os.path.dirname(os.path.dirname(project.sys_ini.path))+'/test.sh') as f:

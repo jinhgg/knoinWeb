@@ -2,10 +2,11 @@ from django.db import models
 
 
 def upload_to_result(instance, filename):
-    return '/'.join(['analys_data', instance.name, 'result', filename])
+    return '/'.join(['analys_data', instance.client_no, 'result', filename])
 
 
 def upload_to_config(instance, filename):
+
     return '/'.join(['analys_data', instance.name, 'config', filename])
 
 
