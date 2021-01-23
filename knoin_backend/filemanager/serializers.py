@@ -1,8 +1,8 @@
-from filemanager.models import File
+from filemanager.models import FileManager
 from rest_framework import serializers
 
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = File
+        model = FileManager
         fields = '__all__'

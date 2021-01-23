@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/analys_data/DCG01201208001/config/main.sh" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/analys_data/DCG01201208001/config/sam.ini" charset="GBK" />
     <file url="file://$PROJECT_DIR$/analys_data/DLX01201208008/config/main.sh" charset="GBK" />
     <file url="file://$PROJECT_DIR$/analys_data/DLX01201208008/config/sam.ini" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/analys_data/RYF03201205002/config/main.sh" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/analys_data/RYF03201205002/config/sam.ini" charset="GBK" />
   </component>
 </project>

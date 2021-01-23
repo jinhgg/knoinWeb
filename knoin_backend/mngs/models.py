@@ -2,15 +2,28 @@ from django.db import models
 
 
 def upload_to_result(instance, filename):
-    return '/'.join(['analys_data', instance.knoin_no, 'result', filename])
+    return '/'.join(['analys_data', instance.client_no, 'result', filename])
+
 
 def upload_to_config(instance, filename):
-    return '/'.join(['analys_data', instance.knoin_no, 'config', filename])
+
+    return '/'.join(['analys_data', instance.name, 'config', filename])
+
+
+class Collection(models.Model):
+    """项目批次"""
+    name = models.CharField(help_text='项目批次', max_length=150, blank=True, null=True)
+    status = models.CharField(help_text='状态', max_length=150, blank=True, null=True)  # 新创建 待分析 分析中 已完成
+    ctrl_file_path = models.CharField(help_text='参考文件绝对路径', max_length=150, blank=True, null=True)
+    main_sh = models.FileField(help_text='运行脚本', upload_to=upload_to_config, blank=True, null=True)
+    sam_ini = models.FileField(help_text='sam.ini', upload_to=upload_to_config, blank=True, null=True)
+    sys_ini = models.FileField(help_text='sys.ini', upload_to=upload_to_config, blank=True, null=True)
 
 
 class Project(models.Model):
     """自定义mngs检测项目模型类"""
 
+    collection_id = models.CharField(help_text='批次id', max_length=150, blank=True, null=True)
     status = models.CharField(help_text='状态', max_length=150, blank=True, null=True)  # 新创建 待分析 分析中 已完成
     client_name = models.CharField(help_text='客户/代理/销售名称', max_length=150, blank=True, null=True)
     client_no = models.CharField(help_text='客户编号', max_length=150, blank=True, null=True)
@@ -40,16 +53,9 @@ class Project(models.Model):
     bio_info = models.CharField(help_text='生物信息补充', max_length=150, blank=True, null=True)
     detect_status = models.CharField(help_text='项目状态', max_length=150, blank=True, null=True)
     sample_size = models.CharField(help_text='样本量', max_length=150, blank=True, null=True)
-    analys_file_name = models.CharField(help_text='分析文件目录', max_length=150, blank=True, null=True)
-    sample_file_name = models.CharField(help_text='样本文件目录', max_length=150, blank=True, null=True)
+    analys_file_path = models.CharField(help_text='分析文件绝对路径', max_length=150, blank=True, null=True)
     analys_report = models.FileField(help_text='分析结果报告', upload_to=upload_to_result, blank=True, null=True)
     qc = models.FileField(help_text='质控结果1', upload_to=upload_to_result, blank=True, null=True)
     kraken2_qc = models.FileField(help_text='质控结果2', upload_to=upload_to_result, blank=True, null=True)
-    qc_image = models.FileField(help_text='质控图片', upload_to=upload_to_result, blank=True, null=True)
+    qc_image = models.ImageField(help_text='质控图片', upload_to=upload_to_result, blank=True, null=True)
 
-    # main.sh
-    main_sh = models.FileField(help_text='运行脚本', upload_to=upload_to_config, blank=True, null=True)
-    # sam.ini
-    sam_ini = models.FileField(help_text='sam.ini', upload_to=upload_to_config, blank=True, null=True)
-    # sys.ini
-    sys_ini = models.FileField(help_text='sys.ini', upload_to=upload_to_config, blank=True, null=True)
