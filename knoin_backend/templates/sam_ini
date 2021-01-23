@@ -1,0 +1,17 @@
+[config]
+runposition=pbs
+sections=fastp,classify,classifycal,fasta
+
+[dir]
+outDir={{ out_dir }}
+filter=$outDir/filter
+classify=$outDir/classify
+
+[sample]
+{% for analys_file_path in analys_file_path_list %}
+{{ client_no }}={{ analys_file_path }}
+{% endfor %}
+ctrl={{ sample_file_path }}
+
+[pbs]
+queue=batch
