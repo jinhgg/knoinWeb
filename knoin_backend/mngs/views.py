@@ -1,5 +1,6 @@
 import os
 
+from docxtpl import DocxTemplate
 from django.core.files.base import ContentFile, File
 from django.http import JsonResponse
 from rest_framework.response import Response
@@ -232,8 +233,72 @@ class UpdateStateView(APIView):
         analysing_collection.save()
         return Response({''}, status=status.HTTP_204_NO_CONTENT)
 
-        # with open(os.path.dirname(os.path.dirname(project.sys_ini.path))+'/test.sh') as f:
-        #     f.write(
-        #         'cd {}\nmain.sh>main.sh.o 2>main.sh.e &'.format(os.path.dirname(os.path.dirname(project.sys_ini.path))))
-        #
-        # cmd = 'sh {path}/'.format(path=project.main_sh.path)
+
+class GenReportView(APIView):
+    """
+    生成报告
+    """
+
+    def post(self, request):
+        """
+        :param request:
+        :return:
+        """
+        project_id = request.data.get('project_id')
+        project = Project.objects.get(id=project_id)
+        if not project:
+            return Response({''}, status=status.HTTP_400_BAD_REQUEST)
+
+        tpl = DocxTemplate('/home/lijh/knoinWeb/knoin_backend/templates/tpl.docx')
+
+        dataList = request.data.get('dataList')
+        print(dataList)
+        if not dataList:
+            return Response({''}, status=status.HTTP_400_BAD_REQUEST)
+        list1 = []
+        list2 = []
+        list3 = []
+        for i in dataList:
+          if i.get('level1') == 'Bacteria':
+              list1.append(i)
+          elif i.get('level1') == 'Fungi':
+              list2.append(i)
+          elif i.get('level1') == 'Viruses':
+              list3.append(i)
+
+        context = {"name": project.patient_name,
+                   "sex": project.gender,
+                   "num": project.client_no,
+                   "age": project.age,
+                   "linchuang": project.diagnosis,
+                   "result": project.detect_result,
+                   "important": project.pathogen,
+                   "hospital": project.hospital,
+                   "Sample_type": project.sample_type,
+                   "Department": project.department,
+                   "Sampling_date": project.sampling_date,
+                   "physician": project.dockor_name,
+                   "Test_date": project.collect_date,
+                   "report_date": project.report_time,
+                   'important_f_results': 'important_f_results',
+                   'f_results': 'f_results',
+                   'fh': 'fh',
+                   'list_1': list1,  # Bacteria
+                   'list_2': list2,  # Fungi
+                   'list_3': 'list_3',  # Viruses
+                   'list_4': 'list_4',  # Parasite
+                   'list_5': 'list_5',
+                   'list_6': 'list_6',
+                   'list_7': 'list_7',
+                   'list_8': 'list_8',  # rgi
+                   'list_9': 'list_9',
+                   'list_10': 'list_10',
+                   'all_reads': 'all_reads',
+                   'non_human': 'non_human',
+                   'non_human_fre': 'non_human_fre', 'q20': 'q20', 'img': 'img', 'explain': 'explain',
+                   'tpl': tpl}
+        context['tpl'].render(context)
+        report_path = '/home/lijh/knoinWeb/knoin_backend/statics/{}_report.docx'.format(project.client_no)
+        tpl.save(report_path)
+        return Response({'report_link': 'http://192.168.3.19:1080/statics/{}_report.docx'.format(project.client_no)},
+                        status=status.HTTP_200_OK)
