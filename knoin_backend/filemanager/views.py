@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from filemanager.models import FileManager
 from filemanager.serializers import FileSerializer
+from rest_framework.views import APIView
 
 
 class FileViewSet(viewsets.ModelViewSet):

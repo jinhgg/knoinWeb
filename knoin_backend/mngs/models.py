@@ -2,29 +2,32 @@ from django.db import models
 
 
 def upload_to_result(instance, filename):
-    return '/'.join(['analys_data', instance.client_no, 'result', filename])
+    collection_name = Collection.objects.get(id=instance.collection_id).name
+    return '/'.join(['analys_data', collection_name, instance.client_no, 'result', filename])
 
 
 def upload_to_config(instance, filename):
-
     return '/'.join(['analys_data', instance.name, 'config', filename])
 
 
 class Collection(models.Model):
     """项目批次"""
     name = models.CharField(help_text='项目批次', max_length=150, blank=True, null=True)
-    status = models.CharField(help_text='状态', max_length=150, blank=True, null=True)  # 新创建 待分析 分析中 已完成
+    sections = models.CharField(help_text='所有模块', max_length=150, blank=True, null=True)
+    finished_sections = models.CharField(help_text='已经分析完的模块', max_length=150, blank=True, null=True)
+    status = models.CharField(help_text='状态', max_length=150, blank=True, null=True, default='已创建')  # 已创建 分析中 已完成
     ctrl_file_path = models.CharField(help_text='参考文件绝对路径', max_length=150, blank=True, null=True)
     main_sh = models.FileField(help_text='运行脚本', upload_to=upload_to_config, blank=True, null=True)
     sam_ini = models.FileField(help_text='sam.ini', upload_to=upload_to_config, blank=True, null=True)
     sys_ini = models.FileField(help_text='sys.ini', upload_to=upload_to_config, blank=True, null=True)
+    results_zip_path = models.CharField(help_text='分析结果zip文件路径',max_length=150, blank=True, null=True)
 
 
 class Project(models.Model):
     """自定义mngs检测项目模型类"""
 
     collection_id = models.CharField(help_text='批次id', max_length=150, blank=True, null=True)
-    status = models.CharField(help_text='状态', max_length=150, blank=True, null=True)  # 新创建 待分析 分析中 已完成
+    status = models.CharField(help_text='状态', max_length=150, blank=True, null=True, default='已创建')  # 已创建 分析中 已完成
     client_name = models.CharField(help_text='客户/代理/销售名称', max_length=150, blank=True, null=True)
     client_no = models.CharField(help_text='客户编号', max_length=150, blank=True, null=True)
     knoin_no = models.CharField(help_text='诺因编号', max_length=150, blank=True, null=True)

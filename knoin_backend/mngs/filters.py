@@ -19,4 +19,4 @@ class CollectionFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Collection
-        exclude = ['main_sh', 'sam_ini', 'sys_ini']
+        exclude = ['main_sh', 'sam_ini', 'sys_ini', 'results_zip_file']

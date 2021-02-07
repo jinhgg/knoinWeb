@@ -1,7 +1,8 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from mngs.views import ProjectViewSet, CollectionViewSet, RunScriptView, GenShFileView, StartAnalysView, UpdateStateView,GenReportView
+from mngs.views import ProjectViewSet, CollectionViewSet, RunScriptView, GenShFileView, StartAnalysView, \
+    UpdateStateView, GenReportView, SaveAnalysView
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet)
@@ -12,6 +13,7 @@ urlpatterns += [
     path('runscript/', RunScriptView.as_view()),
     path('genshfile/', GenShFileView.as_view()),
     path('startanalys/', StartAnalysView.as_view()),
+    path('saveAnalysView/', SaveAnalysView.as_view()),
     path('updatestate/', UpdateStateView.as_view()),
     path('gen-report/', GenReportView.as_view()),
 
