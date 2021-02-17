@@ -26,7 +26,7 @@ class Collection(models.Model):
 class Project(models.Model):
     """自定义mngs检测项目模型类"""
 
-    collection_id = models.CharField(help_text='批次id', max_length=150, blank=True, null=True)
+    collection = models.ForeignKey(Collection, related_name='projects', on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(help_text='状态', max_length=150, blank=True, null=True, default='已创建')  # 已创建 分析中 已完成
     client_name = models.CharField(help_text='客户/代理/销售名称', max_length=150, blank=True, null=True)
     client_no = models.CharField(help_text='客户编号', max_length=150, blank=True, null=True)

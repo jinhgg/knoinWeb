@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django_filters',
     'users.apps.UserConfig',
     'mngs.apps.MngsConfig',
+    'atack.apps.AtackConfig',
     'filemanager.apps.FilemanagerConfig'
 ]
 
@@ -68,22 +69,22 @@ WSGI_APPLICATION = 'knoin_backend.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'knoin',
-    #     'USER': 'ljh',
-    #     'PASSWORD': 'Ljh13952010961!',
-    #     'HOST': '47.92.147.61',
-    #     'PORT': '3306',
-    # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'knoin_platform',
+        'NAME': 'knoin',
         'USER': 'ljh',
-        'PASSWORD': 'lijinhang',
-        'HOST': '192.168.3.19',
+        'PASSWORD': 'Ljh13952010961!',
+        'HOST': '47.92.147.61',
         'PORT': '3306',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'knoin_platform',
+    #     'USER': 'ljh',
+    #     'PASSWORD': 'lijinhang',
+    #     'HOST': '192.168.3.19',
+    #     'PORT': '3306',
+    # }
 }
 
 # Password validation
@@ -123,10 +124,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # ######################################################################### #
-# ############################## 以下是自定义配置 ########################### #
+# ############################## 以下是自定义配置 ############################ #
 # ######################################################################### #
 
+# 这两项是django登录配置，不涉及到drf
 AUTH_USER_MODEL = "users.User"
+# 支持用户名和手机号两种方式登录
 AUTHENTICATION_BACKENDS = ['knoin_backend.utils.auth.UsernameMobileAuthBackend']
 
 # 日志
@@ -185,15 +188,32 @@ JWT_AUTH = {
 
 # drf
 REST_FRAMEWORK = {
-
     # 异常处理
     'EXCEPTION_HANDLER': 'knoin_backend.utils.exceptions.exception_handler',
     # 文档生成
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-    # jwt认证
+    # 全局认证
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # jwt 认证
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # 这是个坑，一定要加逗号
+        # 'knoin_backend.utils.auth.MyJwtAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
         # 'rest_framework.authentication.BasicAuthentication',
     ),
+    # 'DEFAULT_FILTER_BACKENDS': (
+        # 'django_filters.rest_framework.DjangoFilterBackend',
+        # 'django_filters.rest_framework.filters.OrderingFilter',
+    # ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/minute',
+        'user': '50/minute'
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+
 }

@@ -11,18 +11,17 @@ class UserViewSet(ModelViewSet):
     """
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    # permission_classes_by_action = {
+    #     'create': [AllowAny],
+    #     'list': [AllowAny],
+    #     'retrieve': [IsAuthenticated, IsHimself],
+    #     'update': [IsAuthenticated, IsHimself],
+    #     'partial_update': [IsAuthenticated, IsHimself],
+    #     'destroy': [IsAdminUser]
+    # }
 
-    permission_classes_by_action = {
-        'create': [AllowAny],
-        'list': [AllowAny],
-        'retrieve': [IsAuthenticated, IsHimself],
-        'update': [IsAuthenticated, IsHimself],
-        'partial_update': [IsAuthenticated, IsHimself],
-        'destroy': [IsAdminUser]
-    }
-
-    def get_permissions(self):
-        try:
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission() for permission in self.permission_classes]
+    # def get_permissions(self):
+    #     try:
+    #         return [permission() for permission in self.permission_classes_by_action[self.action]]
+    #     except KeyError:
+    #         return [permission() for permission in self.permission_classes]

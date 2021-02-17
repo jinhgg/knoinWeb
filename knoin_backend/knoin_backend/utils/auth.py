@@ -1,5 +1,8 @@
+import jwt
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication, jwt_decode_handler
+from rest_framework import exceptions
 
 from users.models import User
 
@@ -15,7 +18,7 @@ def jwt_response_payload_handler(token, user=None, request=None):
 
 
 class UsernameMobileAuthBackend(ModelBackend):
-    """修改Django的认证类,为了实现多账号登录"""
+    """修改Django的认证类,为了实现用户名和手机号两种方式登录"""
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         # 获取到user
@@ -28,3 +31,29 @@ class UsernameMobileAuthBackend(ModelBackend):
         else:
             if user.check_password(password) and self.user_can_authenticate(user):
                 return user
+
+
+class MyJwtAuthentication(JSONWebTokenAuthentication):
+    def authenticate(self, request):
+        """
+        Returns a two-tuple of `User` and token if a valid signature has been
+        supplied using JWT-based authentication.  Otherwise returns `None`.
+        """
+        jwt_value = self.get_jwt_value(request)
+        if jwt_value is None:
+            raise exceptions.AuthenticationFailed('token不能为空')
+
+        try:
+            payload = jwt_decode_handler(jwt_value)
+        except jwt.ExpiredSignature:
+            msg = _('Signature has expired.')
+            raise exceptions.AuthenticationFailed(msg)
+        except jwt.DecodeError:
+            msg = _('Error decoding signature.')
+            raise exceptions.AuthenticationFailed(msg)
+        except jwt.InvalidTokenError:
+            raise exceptions.AuthenticationFailed()
+
+        user = self.authenticate_credentials(payload)
+
+        return (user, jwt_value)

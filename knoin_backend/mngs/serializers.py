@@ -16,7 +16,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class CollectionSerializer(serializers.ModelSerializer):
     """批次序列化器"""
+    projects = ProjectSerializer(many=True)
 
     class Meta:
         model = Collection
         fields = '__all__'
+
+    def create(self, validated_data):
+        projects_data = validated_data.pop('projects')
+        collection = Collection.objects.create(**validated_data)
+        for projects_data in projects_data:
+            Project.objects.create(collection=collection, **projects_data)
+        return collection

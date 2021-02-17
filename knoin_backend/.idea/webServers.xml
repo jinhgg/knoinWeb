@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="83102cef-33f6-4f50-82e1-5f89e057beb0" name="knoin">
-        <fileTransfer rootFolder="/home/lijh/knoinWeb/knoin_backend" accessType="SFTP" host="192.168.3.19" port="22" sshConfigId="332f9cd9-a2f5-42d0-a3a0-f74f19acfd09" sshConfig="lijh@192.168.3.19:22 password">
+        <fileTransfer rootFolder="/home/lijh/knoinWeb/knoin_backend" accessType="SFTP" host="36.152.159.194" port="202" sshConfigId="332f9cd9-a2f5-42d0-a3a0-f74f19acfd09" sshConfig="lijh@36.152.159.194:202 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

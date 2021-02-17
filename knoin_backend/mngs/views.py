@@ -1,13 +1,16 @@
 import os
 
+import rest_framework_jwt
 from docx.shared import Cm
 from docxtpl import DocxTemplate, InlineImage
 from django.core.files.base import ContentFile, File
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from filemanager.models import FileManager
+from knoin_backend.utils.auth import MyJwtAuthentication
+from knoin_backend.utils.permission import IsHimself
 from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
 from mngs.serializers import ProjectSerializer, CollectionSerializer
@@ -16,6 +19,8 @@ from rest_framework.permissions import IsAuthenticated
 from mngs.models import Project, Collection
 
 from rest_framework import filters, status
+from rest_framework.authentication import BaseAuthentication
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from django_filters import rest_framework
 from mngs.filters import ProjectFilter, CollectionFilter
 
@@ -24,26 +29,26 @@ class ProjectViewSet(ModelViewSet):
     """
     A viewset for viewing and editing Project instances.
     """
-    serializer_class = ProjectSerializer
     queryset = Project.objects.all()
-    filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    serializer_class = ProjectSerializer
+    # 筛选和排序功能，现在是最简单的筛选和排序，复杂的筛选参考教程：https://zhuanlan.zhihu.com/p/110060840
+    filter_backends = [rest_framework.DjangoFilterBackend, filters.OrderingFilter]
     filter_class = ProjectFilter
-    search_fields = '__all__'
-
-    permission_classes_by_action = {
-        'create': [],
-        'list': [],
-        'retrieve': [],
-        'update': [],
-        'partial_update': [],
-        'destroy': []
-    }
-
-    def get_permissions(self):
-        try:
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission() for permission in self.permission_classes]
+    permission_classes = []
+    # permission_classes_by_action = {
+    #     'create': [],
+    #     'list': [],
+    #     'retrieve': [],
+    #     'update': [],
+    #     'partial_update': [],
+    #     'destroy': []
+    # }
+    #
+    # def get_permissions(self):
+    #     try:
+    #         return [permission() for permission in self.permission_classes_by_action[self.action]]
+    #     except KeyError:
+    #         return [permission() for permission in self.permission_classes]
 
 
 class CollectionViewSet(ModelViewSet):
@@ -52,9 +57,9 @@ class CollectionViewSet(ModelViewSet):
     """
     serializer_class = CollectionSerializer
     queryset = Collection.objects.all()
-    filter_backends = (rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (rest_framework.DjangoFilterBackend, filters.OrderingFilter)
     filter_class = CollectionFilter
-    search_fields = '__all__'
+    page_size = 4
     permission_classes_by_action = {
         'create': [],
         'list': [],
@@ -80,7 +85,7 @@ class RunScriptView(APIView):
     """
     run analysis script.
     """
-
+    # self.dispatch
     def post(self, request, format=None):
         cmd = request.data.get('cmd')
         if not cmd:

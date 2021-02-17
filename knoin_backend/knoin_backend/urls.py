@@ -8,4 +8,5 @@ urlpatterns = [
     path('', include('users.urls')),
     path('mngs/', include('mngs.urls')),
     path('', include('filemanager.urls')),
+    path('atack/', include('atack.urls'))
 ]

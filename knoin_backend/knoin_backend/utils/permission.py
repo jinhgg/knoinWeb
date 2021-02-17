@@ -7,5 +7,6 @@ class IsHimself(BasePermission):
     """
 
     def has_permission(self, request, view):
+        print(request.user)
         user_id = view.kwargs.get('pk')
         return bool(request.user.id == int(user_id))

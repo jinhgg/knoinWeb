@@ -9,7 +9,8 @@ class ProjectFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Project
-        exclude = ['analys_report', 'kraken2_qc', 'qc', 'qc_image']
+        fields = ['status', 'client_name']  # 定义哪些字段可以筛选
+        # exclude = ['analys_report', 'kraken2_qc', 'qc', 'qc_image']
 
 
 class CollectionFilter(django_filters.rest_framework.FilterSet):
@@ -19,4 +20,6 @@ class CollectionFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Collection
-        exclude = ['main_sh', 'sam_ini', 'sys_ini', 'results_zip_file']
+        fields = ['status']  # 定义哪些字段可以筛选
+
+        # exclude = ['main_sh', 'sam_ini', 'sys_ini', 'results_zip_file']
