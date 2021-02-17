@@ -28,3 +28,5 @@ class CollectionSerializer(serializers.ModelSerializer):
         for projects_data in projects_data:
             Project.objects.create(collection=collection, **projects_data)
         return collection
+
+

@@ -171,7 +171,7 @@ class StartAnalysView(APIView):
         if not collection:
             return Response({'此项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
         if not collection.ctrl_file_path or not os.path.exists(collection.ctrl_file_path):
-            return Response({'参考文件错误'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'对照文件错误'}, status=status.HTTP_400_BAD_REQUEST)
         projects = Project.objects.filter(collection_id=collection_id)
         if not projects:
             return Response({'此项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
