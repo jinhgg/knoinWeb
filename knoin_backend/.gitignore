@@ -9,8 +9,11 @@ __pycache__/
 .idea/
 
 # Distribution / packaging
+nohup.out
 .Python
+migrations/
 statics/
+templates/
 upload/
 analys_data/
 build/

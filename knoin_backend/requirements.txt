@@ -6,3 +6,4 @@ coreapi
 djangorestframework-jwt
 django-filter
 pillow
+docxtpl

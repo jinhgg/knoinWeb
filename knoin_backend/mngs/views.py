@@ -1,26 +1,22 @@
 import os
-
-import rest_framework_jwt
-from docx.shared import Cm
-from docxtpl import DocxTemplate, InlineImage
-from django.core.files.base import ContentFile, File
-from django.http import JsonResponse
+import json
+from django.core.cache import cache
+from django.shortcuts import get_object_or_404, get_list_or_404
+from docxtpl import DocxTemplate
+from django.core.files.base import ContentFile
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
-from filemanager.models import FileManager
-from knoin_backend.utils.auth import MyJwtAuthentication
-from knoin_backend.utils.permission import IsHimself
+from knoin_backend.const import Const
+from knoin_backend.utils.exceptions import logger
+
 from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
+from mngs.parse_utils import parse_test_date, parse_age, parse_diagnosis, parse_qc_result, \
+    parse_detect_data, parse_img, parse_date
 from mngs.serializers import ProjectSerializer, CollectionSerializer
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 from mngs.models import Project, Collection
-
 from rest_framework import filters, status
-from rest_framework.authentication import BaseAuthentication
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from django_filters import rest_framework
 from mngs.filters import ProjectFilter, CollectionFilter
 
@@ -35,20 +31,6 @@ class ProjectViewSet(ModelViewSet):
     filter_backends = [rest_framework.DjangoFilterBackend, filters.OrderingFilter]
     filter_class = ProjectFilter
     permission_classes = []
-    # permission_classes_by_action = {
-    #     'create': [],
-    #     'list': [],
-    #     'retrieve': [],
-    #     'update': [],
-    #     'partial_update': [],
-    #     'destroy': []
-    # }
-    #
-    # def get_permissions(self):
-    #     try:
-    #         return [permission() for permission in self.permission_classes_by_action[self.action]]
-    #     except KeyError:
-    #         return [permission() for permission in self.permission_classes]
 
 
 class CollectionViewSet(ModelViewSet):
@@ -56,7 +38,7 @@ class CollectionViewSet(ModelViewSet):
     A viewset for viewing and editing Collection instances.
     """
     serializer_class = CollectionSerializer
-    queryset = Collection.objects.all()
+    queryset = Collection.objects.order_by('-id').all()
     filter_backends = (rest_framework.DjangoFilterBackend, filters.OrderingFilter)
     filter_class = CollectionFilter
     page_size = 4
@@ -75,78 +57,7 @@ class CollectionViewSet(ModelViewSet):
         instance.delete()
 
     def get_permissions(self):
-        try:
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            return [permission() for permission in self.permission_classes]
-
-
-class RunScriptView(APIView):
-    """
-    run analysis script.
-    """
-    # self.dispatch
-    def post(self, request, format=None):
-        cmd = request.data.get('cmd')
-        if not cmd:
-            return Response({'empty cmd'}, status=status.HTTP_204_NO_CONTENT)
-        output = runscript(cmd)
-        return Response({'message': 'ok', 'output': output}, status=status.HTTP_200_OK)
-
-
-class GenShFileView(APIView):
-    """
-    run analysis script.
-    """
-
-    def post(self, request, format=None):
-        params = request.data.get('params')
-        if not params or not isinstance(params, dict):
-            return Response({'params error'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 1.根据模板生成文件内容
-        file_str = render(params)
-        # 2.写入到临时文件
-        with open('temp.sh', 'w') as f:
-            f.write(file_str)
-        # 3.把文件复制到mngs目录
-        cmd = 'cat temp.sh > /home/lijh/mNGS/main.sh'.format(file_str)
-        output = runscript(cmd)
-        # 4.执行main.sh
-        cmd = 'sh /home/lijh/mNGS/main.sh>/home/lijh/mNGS/main.sh.o 2>/home/lijh/mNGS/main.sh.e &'
-        output = runscript(cmd)
-        return Response({'message': 'ok', 'os': output}, status=status.HTTP_200_OK)
-
-
-class SaveAnalysView(APIView):
-    """
-    run analysis script.
-    """
-
-    def post(self, request):
-        # 1.获取项目对象
-        collection_id = request.data.get('collection_id')
-        ctrl_path = request.data.get('ctrl_path')
-        projects_list = request.data.get('projects_list')
-        if not projects_list:
-            return Response({'项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
-        collection = Collection.objects.get(id=collection_id)
-        if not collection:
-            return Response({'此项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
-        if not os.path.exists(ctrl_path):
-            return Response({'对照文件错误'}, status=status.HTTP_400_BAD_REQUEST)
-        collection.ctrl_file_path = ctrl_path
-
-        for p in projects_list:
-            project = Project.objects.get(id=p.get('id'))
-            analys_file_path = p.get('analys_file_path')
-            if not os.path.exists(analys_file_path):
-                return Response({'样本{}分析文件错误'.format(project.client_name)}, status=status.HTTP_400_BAD_REQUEST)
-            project.analys_file_path = analys_file_path
-            project.save()
-
-        collection.save()
-        return Response({'ok'}, status=status.HTTP_200_OK)
+        return [permission() for permission in self.permission_classes_by_action[self.action]]
 
 
 class StartAnalysView(APIView):
@@ -167,21 +78,20 @@ class StartAnalysView(APIView):
         """
         # 1.获取项目对象
         collection_id = request.data.get('collection_id')
-        collection = Collection.objects.get(id=collection_id)
-        if not collection:
-            return Response({'此项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
-        if not collection.ctrl_file_path or not os.path.exists(collection.ctrl_file_path):
-            return Response({'对照文件错误'}, status=status.HTTP_400_BAD_REQUEST)
-        projects = Project.objects.filter(collection_id=collection_id)
-        if not projects:
-            return Response({'此项目不存在'}, status=status.HTTP_400_BAD_REQUEST)
+        collection = get_object_or_404(Collection, id=collection_id)
+        ctrl_file_path = collection.ctrl_file_path
+        if not ctrl_file_path:
+            return Response({'缺少对照文件'}, status=status.HTTP_400_BAD_REQUEST)
+        if not os.path.isfile(ctrl_file_path):
+            return Response({'对照文件路径错误'}, status=status.HTTP_400_BAD_REQUEST)
+
+        projects = get_list_or_404(Project, collection_id=collection_id)
 
         # 分析文件路径列表
         client_file_pair_list = []
         for project in projects:
-            if not project.analys_file_path or not os.path.exists(project.analys_file_path):
+            if not project.analys_file_path or not os.path.isfile(project.analys_file_path):
                 return Response({'样本{}:分析文件错误'.format(project.client_no)}, status=status.HTTP_400_BAD_REQUEST)
-            # analys_file_path = FileManager.objects.get(name=project.analys_file_name).file.path
             client_file_pair_list.append(
                 {'client_no': project.client_no, 'analys_file_path': project.analys_file_path}
             )
@@ -194,7 +104,7 @@ class StartAnalysView(APIView):
 
         out_dir = '/mnt/sda/platform/result_data/' + collection.name
         control_dir = '/mnt/sda/platform/control_sh'
-        sections = 'fastp,classify,classifycal,fasta,classifyg,classifygcal,fastag,res'
+        sections = 'filter,human,classify,classifycal,fasta,res,autoscreen'
         sam_ini_str = render({
             'client_file_pair_list': client_file_pair_list,
             'ctrl_file_path': ctrl_file_path,
@@ -203,7 +113,7 @@ class StartAnalysView(APIView):
         }, 'sam.ini').encode(encoding='UTF-8')
         collection.sam_ini.save('sam.ini', ContentFile(sam_ini_str))
 
-        main_sh_str = render({}, 'main.sh').encode(encoding='UTF-8')
+        main_sh_str = render({'collection_name': collection.name}, 'main.sh').encode(encoding='UTF-8')
         collection.main_sh.save('main.sh', ContentFile(main_sh_str))
 
         with open(control_dir + '/{}.sh'.format(collection.name), 'w+') as f:
@@ -218,7 +128,6 @@ class StartAnalysView(APIView):
                                                              sam_path=collection.sam_ini.path, out_dir=out_dir))
 
         cmd = 'bash {}'.format(control_dir + '/{}.sh'.format(collection.name))
-        print(cmd)
         runscript(cmd)
         collection.status = '正在分析'
         collection.sections = sections
@@ -238,88 +147,83 @@ class UpdateStateView(APIView):
         :return:
         """
         collection_id = request.data.get('collection_id')
-        analysing_collection = Collection.objects.get(id=collection_id)
-        if not analysing_collection:
-            return Response({''}, status=status.HTTP_204_NO_CONTENT)
+        collection_name = request.data.get('collection_name')
+        if collection_id:
+            analysing_collection = get_object_or_404(Collection, id=collection_id)
+        else:
+            analysing_collection = get_object_or_404(Collection, name=collection_name)
 
         # collection_dir /20210119
         # collection_dir = os.path.dirname(os.path.dirname(analysing_collection.sys_ini.path))
-        collection_dir = '/mnt/sda/platform/result_data/' + analysing_collection.name
-        if not os.listdir(collection_dir + '/classifyg'):
-            # 没有分析完成的情况
-            bp_path = collection_dir + '/' + 'breakpoint'
-            print(bp_path)
-            if not os.path.exists(bp_path):
-                return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
+        collection_dir = '/mnt/sda/platform/result_data/{}'.format(analysing_collection.name)
+        collection_result_dir = '/mnt/sda/platform/result_data/{}/result'.format(analysing_collection.name)
+
+        if not os.path.exists(collection_dir):
+            return Response({'项目还未开始分析'}, status=status.HTTP_204_NO_CONTENT)
+        bp_path = collection_dir + '/breakpoint'
+        if os.path.exists(bp_path):
             with open(bp_path, 'r') as bp:
                 sections = bp.read()
-                print(sections)
+        else:
+            sections = ''
 
-            finishec_sections = ','.join(sections.split('\n'))
-            analysing_collection.finished_sections = finishec_sections
+        if not os.listdir(collection_result_dir + '/classify'):
+            # 没有分析完成的情况
+            finished_sections = ','.join(sections.split('\n'))
+            analysing_collection.finished_sections = finished_sections
             analysing_collection.save()
             return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
 
-        projects = Project.objects.filter(collection_id=collection_id)
-        if not projects:
-            return Response({''}, status=status.HTTP_204_NO_CONTENT)
-
+        projects = get_list_or_404(Project, collection_id=collection_id)
         result_file_list = []
         for project in projects:
-            # 1.保存质控图片 LX2004622.Qual_lines.png
-            qc_image_path = collection_dir + '/filter/' + project.client_no + '/{}.Qual_lines.png'.format(
+            # 分析结果 LX2004793.kraken2_abundance_result.anno
+            analys_report_path = collection_result_dir + '/classify/{}.classify_abundance_result.anno.xls'.format(
                 project.client_no)
-            if not os.path.exists(qc_image_path):
-                return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
-            qc_image = open(qc_image_path, 'rb').read()
-            project.qc_image.save('{}_qc_image.png'.format(project.client_no), ContentFile(qc_image))
-
-            # 2.质控结果1
-            qc_path = collection_dir + '/classifyg/{}.classify_qc.xls'.format(
-                project.client_no)
-            if not os.path.exists(qc_path):
-                return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
-            qc = open(qc_path)
-            project.qc.save('{}_qc.xls'.format(project.client_no), File(qc))
-
-            # 3.质控结果2
-            kraken2_qc_path = collection_dir + '/filter/' + project.client_no + '/{}.qc.xls'.format(
-                project.client_no)
-            if not os.path.exists(kraken2_qc_path):
-                return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
-            kraken2_qc = open(kraken2_qc_path)
-            project.kraken2_qc.save('{}_qc2.xls'.format(project.client_no), File(kraken2_qc))
-
-            # 4.分析结果 LX2004793.kraken2_abundance_result.anno
-            analys_report_path = collection_dir + '/classify/{}.classify_abundance_result.anno.xls'.format(
+            analys_report_conv_path = collection_result_dir + '/classify/{}.classify_abundance_result_conv.anno.xls'.format(
                 project.client_no)
             if not os.path.exists(analys_report_path):
                 return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
-            for line in open(analys_report_path, encoding='utf8').readlines():
-                with open(collection_dir + '/classify/{}.classify_abundance_result_conv.anno.xls'.format(
-                        project.client_no), "a", encoding='utf_8_sig') as f:
-                    f.write(line)
 
-            analys_report = open(collection_dir + '/classify/{}.classify_abundance_result_conv.anno.xls'.format(
-                project.client_no))
-            project.analys_report.save('{}_result.xls'.format(project.client_no), File(analys_report))
+            with open(analys_report_path, 'r', encoding='utf8') as f:
+                analys_report_filelines = f.readlines()
+            with open(analys_report_conv_path, 'w', encoding='utf_8_sig') as f:
+                f.writelines(analys_report_filelines)
 
-            result_file_list.append(project.analys_report.path)
+            # 保存质控图片 LX2004622.Qual_lines.png
+            qc_image_path = collection_result_dir + '/filter/' + project.client_no + '/{}.Qual_lines.png'.format(
+                project.client_no)
+            if os.path.exists(qc_image_path):
+                project.qc_image_path = qc_image_path
 
+            # 质控结果1
+            # qc_path = collection_result_dir + '/classifyg/{}.classify_qc.xls'.format(
+            #     project.client_no)
+            qc_path = collection_result_dir + '/classify/{}.classify_qc.xls'.format(
+                project.client_no)
+            if os.path.exists(qc_path):
+                project.qc_path = qc_path
+
+            # 3.质控结果2
+            kraken2_qc_path = collection_result_dir + '/filter/' + project.client_no + '/{}.qc.xls'.format(
+                project.client_no)
+            if os.path.exists(kraken2_qc_path):
+                project.kraken2_qc_path = kraken2_qc_path
+
+            project.analys_report_path = analys_report_conv_path
+            result_file_list.append(analys_report_conv_path)
             project.status = '分析完成'
             project.save()
 
         import zipfile
-        zip_file = zipfile.ZipFile(collection_dir + '/results.zip', 'w', zipfile.ZIP_DEFLATED)
-        print(result_file_list)
+        zip_file = zipfile.ZipFile(collection_result_dir + '/results.zip', 'w', zipfile.ZIP_DEFLATED)
         for i in result_file_list:
             file_name = i.split('/')[-1]
             zip_file.write(i, file_name)  # 这个file是文件名，意思是直接把文件添加到zip没有文件夹层级， f.write(i)这种写法，则会出现上面路径的层级
-            # print(zip_file.read())
         zip_file.close()
 
         # results_zip_file = open(collection_dir)
-        analysing_collection.results_zip_path = collection_dir + '/results.zip'
+        analysing_collection.results_zip_path = collection_result_dir + '/results.zip'
         analysing_collection.status = '分析完成'
         analysing_collection.save()
         return Response({''}, status=status.HTTP_204_NO_CONTENT)
@@ -335,138 +239,137 @@ class GenReportView(APIView):
         :param request:
         :return:
         """
-        project_id = request.data.get('project_id')
-        project = Project.objects.get(id=project_id)
-        if not project:
-            return Response({''}, status=status.HTTP_400_BAD_REQUEST)
-
-        template_name = request.data.get('template_name')
-        if not template_name:
-            return Response({''}, status=status.HTTP_400_BAD_REQUEST)
-
-        tpl = DocxTemplate('/home/lijh/knoinWeb/knoin_backend/templates/{}.docx'.format(template_name))
-
-        dataList = request.data.get('dataList')
-        if not dataList:
-            return Response({''}, status=status.HTTP_400_BAD_REQUEST)
-
-        f_results_list = []
-        important_f_results_list = []
-        f_results = []
-        important_f_results = []
-
-        list1 = []
-        list2 = []
-        list3 = []
-        list4 = []
-        list5 = []
-        list6 = []
-        list7 = []
-        list8 = []
-        list9 = []
-        list10 = []
-        list11 = []  # RNA病毒
-        for i in dataList:
-            if i.get('status') == '背景微生物':
-                list9.append(i)
-            elif i.get('sub_type') == '细菌':
-                list1.append(i)
-            elif i.get('sub_type') == '真菌':
-                list2.append(i)
-            elif i.get('sub_type') in 'DNA病毒':
-                list3.append(i)
-            elif i.get('sub_type') in 'RNA病毒':
-                list11.append(i)
-            elif i.get('sub_type') in '寄生虫':
-                list4.append(i)
-            elif i.get('sub_type') in '结核分枝杆菌':
-                list5.append(i)
-            elif i.get('sub_type') in '非结核分枝杆菌':
-                list6.append(i)
-            elif i.get('sub_type') in '支原体/衣原体':
-                list7.append(i)
-            elif i.get('sub_type') in '耐药基因':
-                list8.append(i)
+        mode = request.data.get('mode')
+        if mode == 'auto':
+            project_id = request.data.get('project_id')
+            if not project_id:
+                project_client_no = request.data.get('project_client_no')
+                print(project_client_no)
+                project = get_object_or_404(Project, client_no=project_client_no)
             else:
-                pass
+                project = get_object_or_404(Project, id=project_id)
+            report_format = project.report_format
+            detect_type = project.detect_type
 
-            if i.get('status') == '关注':
-                f_results.append(i.get('species_Cname'))
-                f_results_list.append(i)
-                desc = i.get('des_C')
-                if desc and desc != '-':
-                    if '）' in desc:
-                        i['des_C'] = desc[desc.index('）') + 1:]
-                list10.append(i)
-            if i.get('status') == '重点关注':
-                important_f_results.append(i.get('species_Cname'))
-                important_f_results_list.append(i)
-                desc = i.get('des_C')
-                if desc and desc != '-':
-                    if '）' in desc:
-                        i['des_C'] = desc[desc.index('）') + 1:]
-                list10.append(i)
+            template_name = request.data.get('template_name')
+            if not template_name:
+                if not detect_type:
+                    report_type = 'DNA'
+                elif 'RNA' in detect_type:
+                    report_type = 'DNA+RNA'
+                else:
+                    report_type = 'DNA'
 
-            list1_7 = list1 + list7
+                if 'pdf' in report_format:
+                    template_name = report_type
+                elif '洛兮' in report_format:
+                    template_name = '洛兮'
+                elif '白版' in report_format:
+                    template_name = '白版'
+                elif '云量' in report_format:
+                    template_name = '广州_' + report_type
+                elif '盖章' in report_format:
+                    template_name = '福建_' + report_type
+                else:
+                    return Response({'报告版式名称不正确'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not f_results and not important_f_results:
-            fh = '-'
-            explain = '无'
+            collection = project.collection
+            auto_gen_json_result_path = Const.AUTO_GEN_JSON_RESULT_PATH.format(collection_name=collection.name,
+                                                                               client_no=project.client_no)
+            if not os.path.exists(auto_gen_json_result_path):
+                return Response({'数据为空'}, status=status.HTTP_400_BAD_REQUEST)
+            with open(auto_gen_json_result_path, 'r') as f:
+                data_list_json = f.read()
+            data_list = json.loads(data_list_json)
+
         else:
-            fh = '+'
-            explain = ''
-        f_results = '、'.join(f_results)
-        important_f_results = '、'.join(important_f_results)
-        with open(project.qc.path) as f:
-            qc_file = f.read().split('\t')
-        with open(project.kraken2_qc.path) as f:
-            qc2_file = f.read()
-        all_reads = qc_file[3].split('\n')[1]
-        non_human = qc_file[4]
-        non_human_fre = qc_file[5]
-        q20 = qc_file[6].split('\n')[0]
-        q30 = qc2_file.split('\t')[-1].strip('\n')
-        img = InlineImage(tpl, project.qc_image.path, width=Cm(17.95))
-        linchuang = '，'.join({project.diagnosis, project.clinical_manifestations})
-        age = project.age + '岁' if '天' not in project.age and '岁' not in project.age and project.age != '-' else project.age
-        empty_list = [{'not_found': '未发现'}]
-        context = {"name": project.patient_name,
-                   "sex": project.gender,
-                   "num": project.client_no,
-                   "age": age,
-                   "linchuang": linchuang,
-                   "result": project.detect_result,
-                   "important": project.pathogen if project.pathogen else '',
-                   "hospital": project.hospital,
-                   "Sample_type": project.sample_type,
-                   "Department": project.department,
-                   "Sampling_date": project.sampling_date,
-                   "physician": project.dockor_name,
-                   "Test_date": project.collect_date,
-                   "report_date": project.report_time,
-                   'important_f_results': important_f_results,
-                   'f_results': f_results,
-                   'important_f_results_list': important_f_results_list,
-                   'f_results_list': f_results_list,
-                   'list_1': list1 if list1 else empty_list,  # Bacteria
-                   'list_2': list2 if list2 else empty_list,  # Fungi
-                   'list_3': list3 if list3 else empty_list,  # Viruses
-                   'list_4': list4 if list4 else empty_list,  # Parasite
-                   'list_5': list5 if list5 else empty_list,
-                   'list_6': list6 if list6 else empty_list,
-                   'list_7': list7 if list7 else empty_list,
-                   'list_8': list8 if list8 else empty_list,
-                   'list_9': list9 if list9 else empty_list,
-                   'list_10': list10 if list10 else empty_list,
-                   'list1_7': list1_7 if list1_7 else empty_list,
-                   'all_reads': all_reads,
-                   'non_human': non_human,
-                   'non_human_fre': non_human_fre,
-                   'q20': q20, 'q30': q30, 'img': img, 'explain': explain,
-                   'tpl': tpl, 'fh': fh}
-        context['tpl'].render(context)
-        report_name = '诺微因病原微生物宏基因组测序检测报告-{}_{}.docx'.format(template_name, project.patient_name)
-        report_path = '/home/lijh/knoinWeb/knoin_backend/statics/' + report_name
+            project_id = request.data.get('project_id')
+            logger.info(project_id)
+            project = get_object_or_404(Project, id=project_id)
+            collection = project.collection
+            data_list = request.data.get('dataList')
+            template_name = request.data.get('template_name')
+            if not template_name:
+                return Response({'请选择模板'}, status=status.HTTP_400_BAD_REQUEST)
+
+        template_path = Const.TEMPLATE_PATH.format(template_name=template_name)
+        tpl = DocxTemplate(template_path)
+        # 直接通过project获取的信息
+        name = project.patient_name
+        sex = project.gender
+        num = project.client_no
+        sample_volume = project.sample_size
+        result = project.detect_result
+        pathogen = project.pathogen
+        hospital = project.hospital
+        sample_type = project.sample_type
+        department = project.department
+        physician = project.dockor_name
+        report_date = project.report_time
+
+        test_date = parse_test_date(project.report_time)
+        convey_date = parse_date(project.convey_date)
+        sampling_date = parse_date(project.sampling_date)
+        age = parse_age(project.age)
+        age_luo = age[:-1]
+        diagnosis = parse_diagnosis(project.diagnosis)
+        qc_result = parse_qc_result(project.qc_path, project.kraken2_qc_path)
+        img = parse_img(tpl, project.qc_image_path)
+
+        detect_data = parse_detect_data(data_list)
+
+        tpl.render(locals())
+
+        if template_name == '洛兮' or template_name == '白版':
+            report_name = Const.REPORT_NAME_1.format(patient_name=project.patient_name,
+                                                     sample_type=project.sample_type)
+        elif template_name == 'DNA' or template_name == 'DNA+RNA':
+            report_name = Const.REPORT_NAME_2.format(detect_type='mNGS_' + template_name.split('_')[-1],
+                                                     patient_name=project.patient_name,
+                                                     sample_type=project.sample_type)
+        elif template_name == '广州_DNA' or template_name == '广州_DNA+RNA':
+            hospital = Const.HOSPITAL_MAP.get(project.hospital, project.hospital)
+            report_name = Const.REPORT_NAME_4.format(hospital=hospital,
+                                                     detect_type=template_name.split('_')[-1],
+                                                     patient_name=project.patient_name,
+                                                     sample_type=project.sample_type)
+        else:
+            report_name = Const.REPORT_NAME_3.format(detect_type=template_name.split('_')[-1],
+                                                     patient_name=project.patient_name,
+                                                     sample_type=project.sample_type)
+
+        if collection.status == '待分析' or mode == 'manual':
+            report_path = Const.STATIC_PATH + report_name
+            report_link = Const.STATIC_URL + report_name
+        else:
+            report_path = Const.REPORT_PATH.format(collection_name=collection.name, report_name=report_name)
+            report_link = Const.REPORT_URL.format(collection_name=collection.name, report_name=report_name)
         tpl.save(report_path)
-        return Response({'report_link': 'http://192.168.3.19:1080/statics/' + report_name},
-                        status=status.HTTP_200_OK)
+        return Response({'report_link': report_link}, status=status.HTTP_200_OK)
+
+
+class TestView(APIView):
+    """针对所有用户缓存"""
+
+    def get(self, request):
+        timestamp = cache.get('timestamp')
+        if not timestamp:
+            import time
+            timestamp = time.time()
+            cache.set('timestamp', timestamp, 30)
+        return Response({'timestamp': timestamp}, status=status.HTTP_200_OK)
+
+
+"""
+这种方式缓存,会针对不同用户缓存不同内容,
+根据header里的cookie, Accept-Encoding, Accept-Language...来判断是不是同一用户
+很难做到把上面字段都统一
+@method_decorator(csrf_exempt, name='dispatch')
+class TestView(APIView):
+    @method_decorator(cache_page(30))
+    def get(self, request):
+        import time
+        timestamp = time.time()
+        return Response({'timestamp': timestamp}, status=status.HTTP_200_OK)
+
+"""
