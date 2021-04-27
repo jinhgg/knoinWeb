@@ -6,6 +6,19 @@ from docxtpl import InlineImage
 from knoin_backend.utils.exceptions import logger
 
 
+def parse_pathogen(pathogen):
+    if pathogen == '-' or pathogen == '':
+        return pathogen
+    if ',' in pathogen:
+        pathogen_list = pathogen.split(',')
+    elif '，' in pathogen:
+        pathogen_list = pathogen.split('，')
+    else:
+        pathogen_list = [pathogen]
+    pathogen_str = '+'.join(pathogen_list)
+    return pathogen_str
+
+
 def parse_date(row):
     if not row or row == '-' or row == 'NaN-NaN-NaN':
         return '-'

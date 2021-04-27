@@ -12,7 +12,7 @@ from knoin_backend.utils.exceptions import logger
 from knoin_backend.utils.render import render
 from knoin_backend.utils.runscript import runscript
 from mngs.parse_utils import parse_test_date, parse_age, parse_diagnosis, parse_qc_result, \
-    parse_detect_data, parse_img, parse_date
+    parse_detect_data, parse_img, parse_date, parse_pathogen
 from mngs.serializers import ProjectSerializer, CollectionSerializer
 from rest_framework.viewsets import ModelViewSet
 from mngs.models import Project, Collection
@@ -152,7 +152,6 @@ class UpdateStateView(APIView):
             analysing_collection = get_object_or_404(Collection, id=collection_id)
         else:
             analysing_collection = get_object_or_404(Collection, name=collection_name)
-
         # collection_dir /20210119
         # collection_dir = os.path.dirname(os.path.dirname(analysing_collection.sys_ini.path))
         collection_dir = '/mnt/sda/platform/result_data/{}'.format(analysing_collection.name)
@@ -174,7 +173,7 @@ class UpdateStateView(APIView):
             analysing_collection.save()
             return Response({'正在分析'}, status=status.HTTP_204_NO_CONTENT)
 
-        projects = get_list_or_404(Project, collection_id=collection_id)
+        projects = get_list_or_404(Project, collection_id=analysing_collection.id)
         result_file_list = []
         for project in projects:
             # 分析结果 LX2004793.kraken2_abundance_result.anno
@@ -244,7 +243,6 @@ class GenReportView(APIView):
             project_id = request.data.get('project_id')
             if not project_id:
                 project_client_no = request.data.get('project_client_no')
-                print(project_client_no)
                 project = get_object_or_404(Project, client_no=project_client_no)
             else:
                 project = get_object_or_404(Project, id=project_id)
@@ -300,13 +298,13 @@ class GenReportView(APIView):
         num = project.client_no
         sample_volume = project.sample_size
         result = project.detect_result
-        pathogen = project.pathogen
         hospital = project.hospital
         sample_type = project.sample_type
         department = project.department
         physician = project.dockor_name
         report_date = project.report_time
 
+        pathogen = parse_pathogen(project.pathogen)
         test_date = parse_test_date(project.report_time)
         convey_date = parse_date(project.convey_date)
         sampling_date = parse_date(project.sampling_date)
@@ -320,12 +318,15 @@ class GenReportView(APIView):
 
         tpl.render(locals())
 
-        if template_name == '洛兮' or template_name == '白版':
+        if '白版' in template_name:
             report_name = Const.REPORT_NAME_1.format(patient_name=project.patient_name,
                                                      sample_type=project.sample_type)
         elif template_name == 'DNA' or template_name == 'DNA+RNA':
             report_name = Const.REPORT_NAME_2.format(detect_type='mNGS_' + template_name.split('_')[-1],
                                                      patient_name=project.patient_name,
+                                                     sample_type=project.sample_type)
+        elif '洛兮' in template_name:
+            report_name = Const.REPORT_NAME_3.format(patient_name=project.patient_name,
                                                      sample_type=project.sample_type)
         elif template_name == '广州_DNA' or template_name == '广州_DNA+RNA':
             hospital = Const.HOSPITAL_MAP.get(project.hospital, project.hospital)

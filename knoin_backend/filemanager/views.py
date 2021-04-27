@@ -21,7 +21,6 @@ class GetFileListView(APIView):
 
     def post(self, request):
         dir = request.data.get('dir')
-        print(dir)
         if not dir:
             return Response({'缺少目录参数'}, status=status.HTTP_400_BAD_REQUEST)
         if not os.path.exists(dir):

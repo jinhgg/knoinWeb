@@ -22,6 +22,7 @@ class Collection(models.Model):
     sys_ini = models.FileField(help_text='sys.ini', upload_to=upload_to_config, blank=True, null=True)
     results_zip_path = models.CharField(help_text='分析结果zip文件路径',max_length=500, blank=True, null=True)
     dialogVisible = models.BooleanField(help_text='前端使用字段', default=False, blank=True, null=True)
+    user_id = models.CharField(help_text='创建者', max_length=150, blank=True, null=True)
 
 
 

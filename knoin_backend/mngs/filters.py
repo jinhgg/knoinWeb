@@ -20,6 +20,6 @@ class CollectionFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Collection
-        fields = ['status']  # 定义哪些字段可以筛选
+        fields = ['status', 'user_id']  # 定义哪些字段可以筛选
 
         # exclude = ['main_sh', 'sam_ini', 'sys_ini', 'results_zip_file']

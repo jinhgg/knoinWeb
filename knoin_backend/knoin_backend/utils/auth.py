@@ -10,6 +10,7 @@ from users.models import User
 def jwt_response_payload_handler(token, user=None, request=None):
     """重写JWT登录视图的构造响应数据函数,多追加 id,username,mobile"""
     return {
+        'success': True,
         'id': user.id,
         'username': user.username,
         'mobile': user.mobile,
@@ -33,6 +34,7 @@ class UsernameMobileAuthBackend(ModelBackend):
                 return user
 
 
+# 重写校验header中token的方法，登录token-auth不经过这里
 class MyJwtAuthentication(JSONWebTokenAuthentication):
     def authenticate(self, request):
         """

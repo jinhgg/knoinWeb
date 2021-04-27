@@ -14,7 +14,7 @@ class Const:
     TEMPLATE_PATH = '/home/lijh/knoinWeb/knoin_backend/templates/{template_name}.docx'
     REPORT_NAME_1 = '病原微生物宏基因组测序检测报告-{patient_name}（{sample_type}）.docx'
     REPORT_NAME_2 = '诺微因{detect_type}_{patient_name}（{sample_type}）.docx'
-    REPORT_NAME_3 = '诺微因病原微生物宏基因组测序检测报告-{detect_type}_{patient_name}（{sample_type}）.docx'
+    REPORT_NAME_3 = '病原微生物宏基因组测序检测报告-{patient_name}（{sample_type}）.docx'
     REPORT_NAME_4 = '{hospital}-{detect_type}_{patient_name}（{sample_type}）.docx'
     REPORT_PATH = '/mnt/sda/platform/result_data/{collection_name}/result/report/{report_name}'
     REPORT_URL = FRONT_URL + '/result_data/{collection_name}/result/report/{report_name}'
@@ -23,8 +23,10 @@ class Const:
     HOSPITAL_MAP = {
         '广州市番禺区何贤纪念医院': '何贤医院',
         '广州市番禺中心医院': '番禺中心',
+        '番禺中心医院': '番禺中心',
         '广州市番禺区第八人民医院': '番禺市八',
         '广州市番禺区中医院': '番禺中医',
+        '番禺区中医院': '番禺中医',
         '佛山市第一人民医院': '佛山市一',
         '广东省第二人民医院': '省二',
         '广东省人民医院': '省人民',
@@ -55,9 +57,11 @@ class Const:
         '中山大学附属第一医院东院': '中一黄埔',
         '南方医科大学第三附属医院': '南医三院',
         '汕头大学医学院第一附属医院': '汕大附一',
-        '汕头大学医学院第二附属医院': '汕大附二',
         '汕头大学第一附属医院': '汕大附一',
+        '汕头大学附属第一医院': '汕大附一',
+        '汕头大学医学院第二附属医院': '汕大附二',
         '汕头大学第二附属医院': '汕大附二',
+        '汕头大学附属第二医院': '汕大附二',
         '汕头大学医学院第一附属医院龙湖医院': '龙湖医院',
         '揭阳市人民医院': '揭阳人医',
         '汕头市中心医院': '汕头中心'
